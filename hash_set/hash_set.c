@@ -75,9 +75,11 @@ void hash_set_add(list_node **keys, list_node **buckets, char *key)
                         list_node *tmp_bucket = &tmp_buckets[i];
                         destroy_nodes(&tmp_bucket, nodes_size(&tmp_bucket),nodes_size(&tmp_bucket) -1);
                 }
+                free(*buckets);
                 // increase buckets
                 hash_set_max_buckets *= 2;
                 list_node *new_buckets = (list_node *)malloc(hash_set_max_buckets * sizeof(list_node));
+                init_buckets(&new_buckets);
                 list_node *tmp_keys = *keys;
                 
                 hash_set_readd(&tmp_keys, &new_buckets);
@@ -130,22 +132,22 @@ void hash_set_add(list_node **keys, list_node **buckets, char *key)
 
 list_node *hash_set_get(list_node **buckets, char *key)
 {
+        list_node *bucket;
         if (*buckets == NULL) {
                 puts("there\'s is nothing to get in bucket. \n");
-                return NULL;
+                return bucket;
         }
         if (key == NULL || strlen(key) == 0) {
                 puts("key is required to perform get operation. \n");
-                return NULL;
+                return bucket;
         }
         int idx = hash_set_hash(key);
         if (idx > hash_set_max_buckets && idx > INT_MAX) {
                 puts("hash_set getting out of hash value out of bounds.\n");
-                return NULL;
+                return bucket;
         }
         list_node *tmp_buckets = *buckets;
         list_node *tmp_bucket = &tmp_buckets[idx];
-        list_node *bucket = NULL;
 
         while (tmp_bucket != NULL && tmp_bucket->key != key) 
                 tmp_bucket = tmp_bucket->next;
@@ -153,7 +155,7 @@ list_node *hash_set_get(list_node **buckets, char *key)
                 bucket = &(*tmp_bucket);
                 return bucket;
         }
-        return NULL;
+        return bucket;
 }
 
 

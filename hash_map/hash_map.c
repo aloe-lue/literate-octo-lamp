@@ -85,9 +85,11 @@ void hsh_mp_set(list_node **entries, list_node **buckets, char *key, char *data)
                                         nodes_size(&tmp_bucket), 
                                         nodes_size(&tmp_bucket) -1);
                 }
+                free(*buckets);
                 // increase buckets
                 hash_map_max_buckets *= 2;
                 list_node *new_buckets = (list_node *)malloc(hash_map_max_buckets * sizeof(list_node));
+                init_buckets(&new_buckets);
                 list_node *tmp_entries = *entries;
                 
                 hsh_mp_reset(&tmp_entries, &new_buckets);
