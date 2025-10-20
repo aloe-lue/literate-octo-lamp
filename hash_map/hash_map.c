@@ -141,22 +141,22 @@ void hsh_mp_set(list_node **entries, list_node **buckets, char *key, char *data)
 
 list_node *hsh_mp_get(list_node **buckets, char *key)
 {
+        list_node *bucket;
         if (*buckets == NULL) {
                 puts("there\'s is nothing to get in bucket. \n");
-                return NULL;
+                return bucket;
         }
         if (key == NULL || strlen(key) == 0) {
                 puts("key is required to perform get operation. \n");
-                return NULL;
+                return bucket;
         }
         int idx = hsh_mp_hash(key);
         if (idx > hash_map_max_buckets && idx > INT_MAX) {
                 puts("hash_map getting out of hash value out of bounds.\n");
-                return NULL;
+                return bucket;
         }
         list_node *tmp_buckets = *buckets;
         list_node *tmp_bucket = &tmp_buckets[idx];
-        list_node *bucket = NULL;
 
         while (tmp_bucket != NULL && tmp_bucket->key != key) 
                 tmp_bucket = tmp_bucket->next;
@@ -164,7 +164,7 @@ list_node *hsh_mp_get(list_node **buckets, char *key)
                 bucket = &(*tmp_bucket);
                 return bucket;
         }
-        return NULL;
+        return bucket;
 }
 
 
