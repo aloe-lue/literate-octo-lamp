@@ -232,12 +232,12 @@ int *hsh_mp_clear(list_node **entries, list_node **buckets)
         list_node *tmp_buckets = *buckets;
         list_node *tmp_entries = *entries;
         
-        destroy_nodes(&tmp_entries, nodes_size(&tmp_entries), nodes_size(&tmp_entries));
+        destroy_nodes(entries, nodes_size(&tmp_entries), nodes_size(&tmp_entries));
         for (int i = 0; i < hash_map_max_buckets; i++) {
                 list_node *bucket = &tmp_buckets[i];
                 destroy_nodes(&bucket, nodes_size(&bucket), nodes_size(&bucket) -1);
         }
-        free(tmp_buckets);
+        free(*buckets);
         hash_map_keys = 0;
         return EXIT_SUCCESS;
 }
