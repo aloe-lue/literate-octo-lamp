@@ -17,6 +17,22 @@ list_node *create_node(int key)
         return node;   
 }
 
+void enqueue_node(list_node **head, int key, list_node **tail)
+{
+        list_node *node = create_node(key);
+        node->next = *head; // before head
+        *head = &(*node); // becomes head
+        
+        // find the last value to assign tail with the last 
+        // value of the linked list
+        // i don't know if this will work but I'll figure it out
+        list_node *hd = *head;
+        while (hd->next != NULL) 
+                hd = hd->next;
+        if (hd->next != NULL) 
+                *tail = hd;
+}
+
 void append_node(list_node **head, int key)
 {
         if (*head == NULL) {

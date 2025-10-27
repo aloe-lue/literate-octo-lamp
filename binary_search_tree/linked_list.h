@@ -7,13 +7,16 @@
  * next self refferencing node 
  *
  */
+
 typedef struct list_node {
         int key;
         struct list_node *next;
 } list_node;
 
-
 list_node *create_node(int key);
+
+void enqueue_node(list_node **head, int key, list_node **tail);
+list_node *dequeue_node();
 
 /**
  * add node at the end of the list
@@ -21,10 +24,12 @@ list_node *create_node(int key);
  * @params head and key
  *
  */
+
 void append_node(list_node **head, int key);
 
 /**
  * add node at the beginning of the list
+ * every time you use it find the tail node
  *
  * @params head and key
  */
