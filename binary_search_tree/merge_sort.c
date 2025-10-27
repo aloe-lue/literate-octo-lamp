@@ -1,11 +1,11 @@
 #include "merge_sort.h"
 
-void merge(double arr[], int start, int mid, int end)
+void merge(int *arr, int start, int mid, int end)
 {
         int n1 = mid - start + 1;
         int n2 = end - mid;
 
-        double left[n1], right[n2];
+        int left[n1], right[n2];
 
         for (int i = 0; i < n1; i++)
                 left[i] = arr[start + i];
@@ -31,11 +31,13 @@ void merge(double arr[], int start, int mid, int end)
                 arr[k++] = right[j++];
 }
 
-void merge_sort(double arr[], int start, int end)
+int *merge_sort(int *arr, int start, int end)
 {
         if (start < end) {
                 int mid = (start + end) / 2;
                 merge_sort(arr, start, mid);
                 merge_sort(arr, mid + 1, end);
+                merge(arr, start, mid, end);
         }
+        return arr;
 }

@@ -6,13 +6,13 @@
  *
  * @params arr start and end 
  */
-void merge_sort(double arr[], int start, int end);
+int *merge_sort(int *arr, int start, int end);
 
 /**
  * merge function that does the sorting conquer
  *
  * @params
  */
-void merge(double arr[], int start, int mid, int end);
+void merge(int *arr, int start, int mid, int end);
 
 #endif
