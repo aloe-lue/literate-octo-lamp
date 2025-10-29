@@ -1,0 +1,9 @@
+#include <stdio.h>
+
+int main()
+{
+        char *greet = "Hello, World!!";
+        printf("%s ", greet);
+
+        return 0;
+};
