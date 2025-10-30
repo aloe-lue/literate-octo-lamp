@@ -2,7 +2,7 @@
 #define QUEUE_SLL_H
 
 typedef struct q_list_node {
-        void *data;
+        int data[2];
         struct q_list_node *next;
 } q_list_node;
 
@@ -17,14 +17,14 @@ typedef struct q_linked_list {
  * @params nothing
  * returns q_linked_list accessible
  */
-q_linked_list create_q_linked_list();
+q_linked_list *create_q_linked_list();
 /**
  * create q list node
  *
- * @params void *data
+ * @params int *data
  * returns q_list_node
  */
-q_list_node *create_q_list_node(void *data);
+q_list_node *create_q_list_node(int *data);
 /**
  * add to the front of the q_list_node head
  * update the tail of the q_list_node tail
@@ -33,7 +33,7 @@ q_list_node *create_q_list_node(void *data);
  * @params q_linked_list
  * returns void
  */
-void enqueue_q_list_node(q_linked_list *q; q_list_node *data);
+void enqueue_q_list_node(q_linked_list *QLL, int *data);
 
 /**
  * get the tail of the queue
@@ -43,7 +43,7 @@ void enqueue_q_list_node(q_linked_list *q; q_list_node *data);
  * @params q_linked_list
  * returns a q_list_node of the removed q
  */
-q_list_node *dequeue_q_list_node_s(q_linked_list *q);
+int *dequeue_q_list_node(q_linked_list *QLL);
 
 /**
  * get the q_ll_len
@@ -58,6 +58,14 @@ int size_q_list_node(q_linked_list *q);
  * @params q_linked_list q
  * returns nothing
  */
-char *peek_q_list_node_s(q_linked_list *q);
+int *peek_q_list_node_s(q_linked_list *q);
+
+/**
+ * you want to destroy all of it after use weird phrasing
+ *
+ * @params q linked list Qll
+ */
+
+void destroy_q_list_node(q_list_node *q);
 
 #endif
