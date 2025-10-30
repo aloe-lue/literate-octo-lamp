@@ -17,21 +17,6 @@ list_node *create_node(int key)
         return node;   
 }
 
-void enqueue_node(list_node **head, int key, list_node **tail)
-{
-        list_node *node = create_node(key);
-        node->next = *head; // before head
-        *head = &(*node); // becomes head
-        
-        // find the last value to assign tail with the last 
-        // value of the linked list
-        // i don't know if this will work but I'll figure it out
-        list_node *hd = *head;
-        while (hd->next != NULL) 
-                hd = hd->next;
-        if (hd->next != NULL) 
-                *tail = hd;
-}
 
 void append_node(list_node **head, int key)
 {
@@ -218,3 +203,55 @@ void remove_node_head(list_node **head)
         return;
 }
 
+stack_ll *stack_ll_create()
+{
+        stack_ll *stck_ll = (stack_ll *)malloc(sizeof(stack_ll));
+        if (stck_ll == NULL) {
+                fprintf(stderr, "stack_ll_create malloc failed. \n");
+                exit(EXIT_FAILURE);
+        }
+        stck_ll->lnp = NULL;
+        stck_ll->lnp_size = 0;
+        return stck_ll;
+}
+
+list_node_pair *lnp_create(int *data)
+{
+        list_node_pair *lnp = (list_node_pair *)malloc(sizeof(list_node_pair));
+        if (lnp == NULL) {
+                fprintf(stderr, "lnp_create: malloc failed. \n");
+                exit(EXIT_FAILURE);
+        }
+        for (int i = 0; i < 2; i++)
+                lnp->data[i] = data[i];
+        lnp->next = NULL;
+        return lnp;
+}
+
+void stack_ll_push(stack_ll *stck_ll, int *data)
+{
+        list_node_pair *new_nlp = lnp_create(data);
+        new_nlp->next = stck_ll->lnp;
+        stck_ll->lnp = new_nlp;
+        stck_ll->lnp_size++;
+        return;
+}
+
+list_node_pair *stack_ll_pop(stack_ll *stck_ll)
+{
+        if (stck_ll->lnp_size == 0) {
+                fprintf(stderr, "stck_ll_pop: nothing to pop. \n");
+                exit(EXIT_FAILURE);
+        }
+        list_node_pair *tmp = stck_ll->lnp;
+        list_node_pair *popped_lnp = lnp_create(tmp->data);
+        stck_ll->lnp = stck_ll->lnp->next;
+        stck_ll->lnp_size--;
+        free(tmp);
+        return popped_lnp;
+}
+
+int stack_ll_size(stack_ll *stck_ll)
+{
+        return stck_ll->lnp_size;
+{

@@ -13,10 +13,54 @@ typedef struct list_node {
         struct list_node *next;
 } list_node;
 
-list_node *create_node(int key);
+typedef struct list_node_pair {
+        int data[2];
+        struct list_node_pair *next;
+} list_node_pair;
 
-void enqueue_node(list_node **head, int key, list_node **tail);
-list_node *dequeue_node();
+typedef struct stack_ll {
+        list_node_pair *lnp;
+        int lnp_size;
+} stack_ll;
+
+/*
+ * create one stack ds
+ *
+ * @params
+ * return stack_ll
+ */
+stack_ll *stack_ll_create();
+
+/**
+ * create list_node_pair
+ * 
+ * @param int *data
+ * return list_node_pair 
+ */
+list_node_pair *lnp_create(int *data);
+
+/**
+ * add element at the beginning of the sll
+ *
+ * @params stack and item to push
+ */
+void stack_ll_push(stack_ll *stck_ll, int *data);
+/**
+ * pop for removing element from the front
+ * 
+ * @params stack and store
+ * returns dsa_stack single
+ */
+list_node_pair *stack_ll_pop(stack_ll *stck_ll);
+
+/**
+ *  create node for list node
+ *
+ * @params key
+ * returns a list_node
+ */
+
+list_node *create_node(int key);
 
 /**
  * add node at the end of the list
