@@ -53,13 +53,20 @@ void stack_ll_push(stack_ll *stck_ll, int *data);
  */
 list_node_pair *stack_ll_pop(stack_ll *stck_ll);
 
+
+/*
+ * returns the size of stack ll
+ *
+ * @params stack_ll
+ */
+int stack_ll_size(stack_ll *stck_ll);
+
 /**
  *  create node for list node
  *
  * @params key
  * returns a list_node
  */
-
 list_node *create_node(int key);
 
 /**

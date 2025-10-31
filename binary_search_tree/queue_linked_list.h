@@ -1,6 +1,9 @@
 #ifndef QUEUE_SLL_H
 #define QUEUE_SLL_H
 
+#include "binary_search_tree.h"
+#include "linked_list.h"
+
 typedef struct q_list_node {
         int data[2];
         struct q_list_node *next;
@@ -67,5 +70,38 @@ int *peek_q_list_node_s(q_linked_list *q);
  */
 
 void destroy_q_list_node(q_list_node *q);
+
+/**
+ * def struct for tree
+ */
+typedef struct bst_q_tree {
+        bst_node *head;
+        bst_node *tail;
+        int size;
+} bst_q_tree;
+/**
+ * this create the queue struct
+ *
+ * @params
+ */
+bst_q_tree *bst_q_create();
+/**
+ * bst node have next left right and parent pointer
+ * and so in this case I will use enqueue to display
+ * or destroy the tree with this queue weird
+ *
+ * @params bst_tree
+ * returns nothing 
+ */
+void enqueue_bst_q_node(bst_q_tree *tree, bst_node *node);
+
+/**
+ * destroy the bst node of the head
+ *
+ * @params bst_tree
+ * returns the bst node of the head so free it after use
+ *
+ */
+bst_node *dequeue_bst_q_node(bst_q_tree *tree);
 
 #endif

@@ -96,7 +96,7 @@ void hash_set_add(list_node **keys, list_node **buckets, int key)
                 if (tmp_keys == NULL)
                        *keys = create_node(key);
                 else
-                        append_node(&tmp_keys, key);
+                        append_node(keys, key);
                 return;
         }
 
@@ -121,7 +121,7 @@ void hash_set_add(list_node **keys, list_node **buckets, int key)
         list_node *tmp_bucket = &tmp_buckets[idx];
         list_node *temp_keys_2 = *keys;
         append_node(&tmp_bucket, key);
-        append_node(&temp_keys_2, key);
+        append_node(keys, key);
         hash_set_keys += 1;
         return;
 }

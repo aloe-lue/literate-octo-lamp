@@ -254,4 +254,4 @@ list_node_pair *stack_ll_pop(stack_ll *stck_ll)
 int stack_ll_size(stack_ll *stck_ll)
 {
         return stck_ll->lnp_size;
-{
+}

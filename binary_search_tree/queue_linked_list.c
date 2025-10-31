@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include "queue_linked_list.h"
+#include "binary_search_tree.h"
 
 q_list_node *create_q_list_node(int *data)
 {
@@ -91,4 +93,53 @@ void destroy_q_list_node(q_list_node *q)
         destroy_q_list_node(q->next);
         free(q);
 }
+
+/**
+ * down here is for queue for bst
+ */
+bst_q_tree *bst_q_create()
+{
+        bst_q_tree *q_tree = (bst_q_tree *)malloc(sizeof(bst_q_tree));
+        if (q_tree == NULL) {
+                fprintf(stderr, "dequeue_bst_q_node: q is empty.");
+                exit(EXIT_FAILURE);
+        }
+        q_tree->head = NULL;
+        q_tree->tail = NULL;
+        q_tree->size = 0;
+        return q_tree;
+}
+
+void enqueue_bst_q_node(bst_q_tree *tree, bst_node *node) 
+{
+        if (tree->tail == NULL) {
+                tree->tail = tree->head = node;
+                tree->size++;
+                return;
+        }
+        tree->tail->next = node;
+        tree->tail = node;
+        tree->size++;
+}
+
+bst_node *dequeue_bst_q_node(bst_q_tree *tree)
+{
+        if (tree->size == 0) {
+                fprintf(stderr, "dequeue_bst_q_node: q is empty.");
+                exit(EXIT_FAILURE);
+        }
+        bst_node *tmp = tree->head;
+        tree->head = tmp->next;
+        if (tree->head == NULL) {
+                tree->tail = NULL;
+        }
+        bst_node *data = (bst_node *)malloc(sizeof(bst_node));
+        data->key = tmp->key;
+        data->right = tmp->right;
+        data->left = tmp->left;;
+        tree->size--;
+        free(tmp);
+        return data;
+}
+
 
