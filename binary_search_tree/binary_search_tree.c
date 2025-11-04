@@ -11,30 +11,59 @@
 #include "binary_search_tree.h"
 #include "queue_linked_list.h"
 
-void bst_pretty_print(bst_node *root, 
-                int level, 
-                const char *prefix,  
-                int is_left) 
+#define PREFIX_MAX_LEN 1024 
+void bst_pretty_print(bst_node *root,
+                               int level,
+                               char *prefix_buffer, // Pass the buffer itself
+                               size_t buffer_size,  // Pass the total buffer size
+                               int is_left) 
 {
         if (root == NULL)
                 return;
         
-        char dest[level *4 +5];
-        strcpy(dest, prefix);
-        strcat(dest, (is_left ? "│   " : "    "));
-        bst_pretty_print(root->right, level +1, dest, 0);
-
-        printf("%s%s%d\n", 
-                        prefix, 
-                        (is_left ? 
-                         "\u2570─\u2022 " : 
-                         "\u256D─\u2022 "), 
-                        root->key);
-
-        char dest2[level *4 +5];
-        strcpy(dest2, prefix);
-        strcat(dest2, (is_left ? "    " : "│   "));
-        bst_pretty_print(root->left, level +1, dest2, 1);
+        size_t current_len = strlen(prefix_buffer);
+        // Use snprintf to safely append to the current buffer, tracking remaining space
+        snprintf(prefix_buffer + current_len, 
+                        buffer_size - current_len, 
+                        "%s", 
+                        (is_left ? "│   " : "    "));
+        bst_pretty_print(root->right, 
+                        level + 1, 
+                        prefix_buffer, 
+                        buffer_size, 0);
+        
+        // Reset the prefix to its state *before* the right child's indentation was added
+        prefix_buffer[current_len] = '\0';
+        
+        printf("%s%s%d\n",
+                prefix_buffer,
+                (is_left ?
+                "\u2570─\u2022 " : // ╰─•
+                "\u256D─\u2022 "), // ╭─•
+                root->key);
+        
+        // Safely append the *left* child's indentation pattern to the prefix buffer
+        current_len = strlen(prefix_buffer); // Get the length again after printing the current node
+        snprintf(prefix_buffer + current_len, 
+                        buffer_size - current_len, 
+                        "%s", 
+                        (is_left ? "    " : "│   "));
+        bst_pretty_print(root->left, 
+                        level + 1, 
+                        prefix_buffer, 
+                        buffer_size, 1);
+         
+        // After this call returns, we must ensure the buffer is truncated back to its parent's length
+        prefix_buffer[current_len] = '\0';
+}
+        
+void bst_print(bst_node* root) 
+{
+        char buffer[PREFIX_MAX_LEN] = "";
+        
+        if (root != NULL) {
+                bst_pretty_print(root, 0, buffer, sizeof(buffer), 0);
+        }
 }
 
 int remove_duplicates(int *keys, int *arr, int keys_size)
@@ -146,67 +175,54 @@ bst_node *bst_maximum(bst_node *root)
         return tmp_root;
 }
 
-bst_node* bst_successor(bst_node* T) 
+bst_node* bst_successor(bst_node *root) 
 {
-    if(T == NULL)
-        return T; // Since T==NULL, it's equivalent to return NULL
-    else if(T->left != NULL) {
-        while(T->left != NULL)
-            T=T->left;
-        return T;
-    }
-    else {
-        while(T->parent != NULL && T->parent->right == T)
-            T = T->parent;
-        return T->parent;
-    }
+        if (root == NULL)
+                return root;
+        else if (root->left != NULL) {
+                while (root->left != NULL)
+                        root = root->left;
+                return root;
+        } else {
+                while (root->parent != NULL && root->parent->right == root)
+                        root = root->parent;
+                return root->parent;
+        }
 } 
 
-void bst_delete(bst_node *root, int key)
+void bst_delete(bst_node **root, int key)
 {
-        if (key < 0 || key > INT_MAX) {
-                puts("key should be non-negative \n");
-                return;
-        }
-        bst_node *z = root;
-        while (z != NULL && z->key != key) {
-                if (z->key > key) 
-                        z = z->left;
-                else z = z->right;
-        }
-        if (z == NULL) {
-                puts("key doesn\'t exist in the tree. \n");
-                return;
-        }
-        if (z->left == NULL) 
-                bst_transplant(&root, z, z->right);
-        else if (z->right == NULL)
-                bst_transplant(&root, z, z->left);
+        bst_node *z = bst_find(*root, key);
+        
+        if (z->right == NULL)
+                bst_transplant(root, z, z->left);
+        else if (z->left == NULL)
+                bst_transplant(root, z, z->right);
         else {
-                bst_node *y = bst_successor(z->right);
+                bst_node *y = bst_minimum(z->right);
 
-                if (y->parent->right != y) {
-                        bst_transplant(&root, y, y->right);
+                if (y->parent != z) {
+                        bst_transplant(root, y, y->right);
                         y->right = z->right;
                         y->right->parent = y;
                 }
-                bst_transplant(&root, z, y);
+                bst_transplant(root, z, y);
                 y->left = z->left;
                 y->left->parent = y;
         }
         free(z);
 }
-
+        
 bst_node *bst_find(bst_node *root, int key)
 {
-       bst_node *t_root = root;
-       if (key < 0 || key > INT_MAX) {
-               puts("key should be non-negative value. \n");
-               return t_root;
-       }
-        while (t_root != NULL && t_root->key != key) {
-                if (key > t_root->key) 
-                        t_root = t_root->right;
+        bst_node *t_root = root;
+        if (key < 0 || key > INT_MAX) {
+                puts("key should be non-negative value. \n");
+                return t_root;
+        }
+                while (t_root != NULL && t_root->key != key) {
+                        if (key > t_root->key) 
+                                t_root = t_root->right;
                 else t_root = t_root->left;
         }
         if (t_root == NULL)
@@ -216,26 +232,37 @@ bst_node *bst_find(bst_node *root, int key)
 
 void bst_destroy(bst_node *tree)
 {
-        bst_q_tree *q_tree = bst_q_create();
-        enqueue_bst_q_node(q_tree, tree);
-
-        while (q_tree->size != 0) {
-                bst_node *front = dequeue_bst_q_node(q_tree);
-                
-                if (front->left != NULL) 
-                        enqueue_bst_q_node(q_tree, front->left);
-                if (front->right != NULL) 
-                        enqueue_bst_q_node(q_tree, front->right);
-                free(front);
-        }
-        free(q_tree);
+        if (tree == NULL) 
+                return;
+        bst_destroy(tree->left);
+        bst_destroy(tree->right);
+        free(tree);
 }
 
-void bst_level_order(bst_node **tree);
+int *bst_level_order(bst_node *tree)
+{
+        bst_qll *Q = create_bst_qll();
+        bst_qll_enqueue(Q, tree);
+
+        while (Q->len != 0) {
+                bst_node *front = bst_qll_dequeue(Q);
+
+                if (front->left != NULL)
+                        bst_qll_enqueue(Q, front->left);
+                if (front->right != NULL)
+                        bst_qll_enqueue(Q, front->right);
+
+                free(front);
+        }
+        free(Q);
+}
+
 int *bst_pre_order(bst_node *tree);
 int *bst_in_order(bst_node *tree);
 int *bst_post_order(bst_node *tree);
+
 int bst_height(bst_node *tree);
 int bst_depth(bst_node *tree);
 bool bst_is_balanced(bst_node *tree);
-bst_node bst_rebalance(bst_node *tree);
+
+bst_node *bst_rebalance(bst_node *tree);

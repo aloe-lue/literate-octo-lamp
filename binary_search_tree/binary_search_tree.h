@@ -8,7 +8,6 @@
 typedef struct bst_node {
         int key;
         struct bst_node *parent;
-        struct bst_node *next;
         struct bst_node *left;
         struct bst_node *right;
 } bst_node;
@@ -63,7 +62,7 @@ void bst_insert(bst_node *tree, int value);
  * @params tree and value
  */
 
-void bst_delete(bst_node *root, int value);
+void bst_delete(bst_node **root, int value);
 /**
  * handles intricacies of deletion operation
  *
@@ -106,7 +105,7 @@ void bst_destroy(bst_node *tree);
  *
  * @params tree
  */
-void bst_level_order(bst_node **tree);
+int *bst_level_order(bst_node *tree);
 /**
  * uses dfs methods
  * 
@@ -125,13 +124,20 @@ bool bst_isBalanced(bst_node *tree);
  * @params tree
  * returns the root
  */
-bst_node bst_rebalance(bst_node *tree);
+bst_node *bst_rebalance(bst_node *tree);
 
 /**
  * pretty print bst
  *
  * @params tree, prefix and false
  */
-void bst_pretty_print(bst_node *root, int level, const char *prefix, int is_left) ;
 
+
+void bst_pretty_print(bst_node *root,
+                               int level,
+                               char *prefix_buffer,
+                               size_t buffer_size,
+                               int is_left);
+
+void bst_print(bst_node* root);
 #endif
