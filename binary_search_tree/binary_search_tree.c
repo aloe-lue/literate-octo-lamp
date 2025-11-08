@@ -38,8 +38,8 @@ void bst_pretty_print(bst_node *root,
         printf("%s%s%d\n",
                 prefix_buffer,
                 (is_left ?
-                "\u2570─\u2022 " : // ╰─•
-                "\u256D─\u2022 "), // ╭─•
+                "╰─• " : 
+                "╭─• "), 
                 root->key);
         
         // Safely append the *left* child's indentation pattern to the prefix buffer
@@ -193,6 +193,8 @@ bst_node* bst_successor(bst_node *root)
 void bst_delete(bst_node **root, int key)
 {
         bst_node *z = bst_find(*root, key);
+        if (z == NULL)
+                return;
         
         if (z->right == NULL)
                 bst_transplant(root, z, z->left);
@@ -216,17 +218,15 @@ void bst_delete(bst_node **root, int key)
 bst_node *bst_find(bst_node *root, int key)
 {
         bst_node *t_root = root;
-        if (key < 0 || key > INT_MAX) {
-                puts("key should be non-negative value. \n");
-                return t_root;
-        }
-                while (t_root != NULL && t_root->key != key) {
-                        if (key > t_root->key) 
-                                t_root = t_root->right;
+        if (key < 0 || key > INT_MAX)
+                printf("key should be non-negative key.\n");
+        while (t_root != NULL && t_root->key != key) {
+                if (key > t_root->key) 
+                        t_root = t_root->right;
                 else t_root = t_root->left;
         }
-        if (t_root == NULL)
-                puts("key not found. \n");
+        if (t_root == NULL) 
+                printf("key not found.\n");
         return t_root;
 }
 
@@ -239,30 +239,43 @@ void bst_destroy(bst_node *tree)
         free(tree);
 }
 
-int *bst_level_order(bst_node *tree)
+list_node *bst_level_order(bst_node **tree)
 {
         bst_qll *Q = create_bst_qll();
-        bst_qll_enqueue(Q, tree);
+        bst_qll_enqueue(Q, *tree);
+        list_node *ln = NULL;
 
         while (Q->len != 0) {
-                bst_node *front = bst_qll_dequeue(Q);
-
-                if (front->left != NULL)
+                bst_node *front = bst_front(Q);
+                if (front->left != NULL) 
                         bst_qll_enqueue(Q, front->left);
-                if (front->right != NULL)
-                        bst_qll_enqueue(Q, front->right);
 
-                free(front);
+                if (front->right != NULL) 
+                        bst_qll_enqueue(Q, front->right);
+                
+                append_node(&ln, front->key);
+                bst_qll_dequeue(Q);
         }
         free(Q);
+        return ln;
 }
 
-int *bst_pre_order(bst_node *tree);
-int *bst_in_order(bst_node *tree);
-int *bst_post_order(bst_node *tree);
+list_node *bst_pre_order(bst_node **tree, list_node **ln)
+{
+        bst_node *tmp = *tree;
+        if (tmp == NULL) 
+                return NULL;
+        list_node *tmp_ln = *ln;
+        append_node(&tmp_ln, tmp->key);
+        bst_pre_order(&tmp->left, &tmp_ln);
+        bst_pre_order(&tmp->right, &tmp_ln);
+        return tmp_ln;
+}
 
-int bst_height(bst_node *tree);
-int bst_depth(bst_node *tree);
+list_node *bst_in_order(bst_node **tree, list_node **ln)
+list_node *bst_post_order(bst_node **tree, list_node **ln)
+
+int bst_height(bst_node *tree, int key);
+int bst_depth(bst_node *tree, int key);
 bool bst_is_balanced(bst_node *tree);
-
 bst_node *bst_rebalance(bst_node *tree);

@@ -23,6 +23,11 @@ typedef struct stack_ll {
         int lnp_size;
 } stack_ll;
 
+/**
+ * use this method for dfs operation
+ *
+ */
+void bst_append_node(list_node **head, list_node **tail, int data);
 /*
  * create one stack ds
  *

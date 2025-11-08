@@ -17,6 +17,17 @@ list_node *create_node(int key)
         return node;   
 }
 
+void bst_append_node(list_node **head, list_node **tail, int data)
+{
+        list_node *new_node = create_node(data);
+        if (*head == NULL) {
+                *head = new_node;
+                *tail = new_node;
+        } else {
+                (*tail)->next = new_node;
+                *tail = new_node;
+        }
+}
 
 void append_node(list_node **head, int key)
 {

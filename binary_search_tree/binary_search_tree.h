@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "linked_list.h"
+
 // add next for queue
 typedef struct bst_node {
         int key;
@@ -105,17 +107,18 @@ void bst_destroy(bst_node *tree);
  *
  * @params tree
  */
-int *bst_level_order(bst_node *tree);
+list_node *bst_level_order(bst_node **tree);
 /**
  * uses dfs methods
  * 
  * @params pre in and post order is tree
  */
-int *bst_pre_order(bst_node *tree);
-int *bst_in_order(bst_node *tree);
-int *bst_post_order(bst_node *tree);
-int bst_height(bst_node *tree);
-int bst_depth(bst_node *tree);
+list_node *bst_pre_order(bst_node **tree, list_node **ln);
+list_node *bst_in_order(bst_node **tree, list_node **ln);
+list_node *bst_post_order(bst_node **tree, list_node **ln);
+
+int bst_height(bst_node *tree, int key);
+int bst_depth(bst_node *tree, int key);
 bool bst_isBalanced(bst_node *tree);
 /**
  * use bfs or dfs in my case I will use dfs inorder
