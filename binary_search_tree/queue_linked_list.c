@@ -9,10 +9,17 @@ ql_node *create_ql_node(bst_node *node)
 {
         ql_node *q_node = (ql_node *)malloc(sizeof(ql_node));
         if (q_node == NULL) {
-                fprintf(stderr, "create_bst_qll func: malloc failed.\n");
+                fprintf(stderr, "create_bst_qll func: q_node malloc failed.\n");
                 exit(EXIT_FAILURE);
         }
-        q_node->node = node;
+        q_node->node = (bst_node *)malloc(sizeof(bst_node));
+        if (q_node->node == NULL) {
+                fprintf(stderr, "create_bst_qll func: bst node malloc failed.\n");
+                exit(EXIT_FAILURE);
+        }
+        q_node->node->key = node->key;
+        q_node->node->left = node->left;
+        q_node->node->right = node->right;
         q_node->next = NULL;
         return q_node;
 }
@@ -43,24 +50,23 @@ void bst_qll_enqueue(bst_qll *Q, bst_node *node)
         Q->len++;
 }
 
-bst_node *bst_qll_dequeue(bst_qll *Q)
+void bst_qll_dequeue(bst_qll *Q)
 {
         if (Q->len == 0) {
                 fprintf(stderr, "bst_qll_dequeue: Q empty. \n");
                 exit(EXIT_FAILURE);
         }
         ql_node *tmp = Q->head;
-        Q->head->next = tmp->next;
-        if (Q->head == NULL) {
+        Q->head = tmp->next;
+        if (Q->head == NULL)
                 Q->tail = NULL;
-        }
-        bst_node *dqd_node = (bst_node *)malloc(sizeof(bst_node));
-        if (dqd_node == NULL) {
-                fprintf(stderr, "bst_qll_dequeue: malloc failed. \n");
-                exit(EXIT_FAILURE);
-        }
-        dqd_node = tmp->node;
         Q->len--;
         free(tmp);
-        return dqd_node;
+}
+
+bst_node *bst_front(bst_qll *Q) 
+{
+        if (Q == NULL)
+                return NULL;
+        return Q->head->node;
 }

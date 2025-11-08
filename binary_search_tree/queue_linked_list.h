@@ -6,7 +6,6 @@
 
 /**
  * follows first in first out
- *
  * tail pointer
  */
 typedef struct ql_node {
@@ -46,7 +45,12 @@ void bst_qll_enqueue(bst_qll *Q, bst_node *node);
  *
  * @params bst_qll
  */
-bst_node *bst_qll_dequeue(bst_qll *Q);
+void bst_qll_dequeue(bst_qll *Q);
 
+/**
+ *  get the front bst 
+ *
+ */
+bst_node *bst_front(bst_qll *Q);
 
 #endif
