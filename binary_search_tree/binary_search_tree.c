@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 
 #include "merge_sort.h"
 #include "linked_list.h"
@@ -260,22 +261,133 @@ list_node *bst_level_order(bst_node **tree)
         return ln;
 }
 
-list_node *bst_pre_order(bst_node **tree, list_node **ln)
+void bst_pre_order(bst_node *tree, list_node **head, list_node **tail)
 {
-        bst_node *tmp = *tree;
-        if (tmp == NULL) 
-                return NULL;
-        list_node *tmp_ln = *ln;
-        append_node(&tmp_ln, tmp->key);
-        bst_pre_order(&tmp->left, &tmp_ln);
-        bst_pre_order(&tmp->right, &tmp_ln);
-        return tmp_ln;
+        if (tree == NULL) 
+                return;
+        bst_append_node(head, tail, tree->key);        
+        bst_pre_order(tree->left, head, tail);
+        bst_pre_order(tree->right, head, tail);
 }
 
-list_node *bst_in_order(bst_node **tree, list_node **ln)
-list_node *bst_post_order(bst_node **tree, list_node **ln)
+void bst_in_order(bst_node *tree, list_node **head, list_node **tail)
+{
+        if (tree == NULL) 
+                return;
+        bst_in_order(tree->left, head, tail);
+        bst_append_node(head, tail, tree->key);        
+        bst_in_order(tree->right, head, tail);
+}
 
-int bst_height(bst_node *tree, int key);
-int bst_depth(bst_node *tree, int key);
-bool bst_is_balanced(bst_node *tree);
-bst_node *bst_rebalance(bst_node *tree);
+void bst_post_order(bst_node *tree, list_node **head, list_node **tail)
+{
+        if (tree == NULL) 
+                return;
+        bst_post_order(tree->left, head, tail);
+        bst_post_order(tree->right, head, tail);
+        bst_append_node(head, tail, tree->key);        
+}
+
+int bst_height(bst_node **tree, int key)
+{
+        bst_qll *Q = create_bst_qll();
+        bst_qll_enqueue(Q, *tree);
+
+        int height = -1;
+        int depth = -1;
+        int level = 0;
+
+        // the level of indentation is indication that this function is slow
+        while (Q->len > 0) {
+                int Q_len = Q->len;
+
+                for (int i = 0; i < Q_len; i++) {
+                        bst_node *front = bst_front(Q);
+
+                        if (key == front->key) 
+                                depth = level;
+
+                        if (front->left != NULL) 
+                                bst_qll_enqueue(Q, front->left);
+        
+                        if (front->right != NULL) 
+                                bst_qll_enqueue(Q, front->right);
+                 
+                        bst_qll_dequeue(Q);
+                }
+                level++;
+        }
+        free(Q);
+        height = level - depth - 1;
+        return height;
+}
+int bst_depth(bst_node **tree, int key)
+{
+        bst_qll *Q = create_bst_qll();
+        bst_qll_enqueue(Q, *tree);
+
+        int height = -1;
+        int depth = -1;
+        int level = 0;
+
+        // the level of indentation is indication that this function is slow
+        while (Q->len > 0) {
+                int Q_len = Q->len;
+
+                for (int i = 0; i < Q_len; i++) {
+                        bst_node *front = bst_front(Q);
+
+                        if (key == front->key) 
+                                depth = level;
+
+                        if (front->left != NULL) 
+                                bst_qll_enqueue(Q, front->left);
+        
+                        if (front->right != NULL) 
+                                bst_qll_enqueue(Q, front->right);
+                 
+                        bst_qll_dequeue(Q);
+                }
+                level++;
+        }
+        free(Q);
+        return depth;
+}
+
+int bst_is_balanced(bst_node *tree)
+{
+        if (tree == NULL)
+                return 0;
+
+        int left_is_balanced = bst_is_balanced(tree->left);
+        if (left_is_balanced == -1) 
+                return -1;
+
+        int right_is_balanced = bst_is_balanced(tree->right);
+        if (right_is_balanced == -1) 
+                return -1;
+
+        if (abs(left_is_balanced -right_is_balanced) > 1) 
+                return -1;
+
+        return (left_is_balanced -right_is_balanced) +1;
+}
+
+bst_node *bst_rebalance(bst_node *tree)
+{
+        list_node *in_head = NULL;
+        list_node *in_tail = NULL;
+        bst_in_order(tree, &in_head, &in_tail);
+
+        int keys_size = nodes_size(&in_head);
+        int array[keys_size];
+        
+        int i = 0;
+        while (in_head != NULL) {
+                array[i++] = in_head->key;
+                in_head = in_head->next;
+        }
+
+        destroy_nodes(&in_tail, keys_size, keys_size);
+        return bst_create(array, keys_size);
+}

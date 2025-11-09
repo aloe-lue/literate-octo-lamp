@@ -113,13 +113,13 @@ list_node *bst_level_order(bst_node **tree);
  * 
  * @params pre in and post order is tree
  */
-list_node *bst_pre_order(bst_node **tree, list_node **ln);
-list_node *bst_in_order(bst_node **tree, list_node **ln);
-list_node *bst_post_order(bst_node **tree, list_node **ln);
+void bst_pre_order(bst_node *tree, list_node **head, list_node **tail);
+void bst_in_order(bst_node *tree, list_node **head, list_node **tail);
+void bst_post_order(bst_node *tree, list_node **head, list_node **tail);
 
-int bst_height(bst_node *tree, int key);
-int bst_depth(bst_node *tree, int key);
-bool bst_isBalanced(bst_node *tree);
+int bst_height(bst_node **tree, int key);
+int bst_depth(bst_node **tree, int key);
+int bst_is_balanced(bst_node *tree);
 /**
  * use bfs or dfs in my case I will use dfs inorder
  * use the previous element called build tree
