@@ -50,7 +50,7 @@ bst_node *bst_create(int *keys, int keys_size);
  * returns void;
  * @params tree and value
  */
-void bst_insert(bst_node *tree, int value);
+void bst_insert(bst_node **tree, int value);
 /**
  * delete a value in the tree
  *      handle intricate case such as when
@@ -127,13 +127,14 @@ int bst_is_balanced(bst_node *tree);
  * @params tree
  * returns the root
  */
-bst_node *bst_rebalance(bst_node *tree);
+bst_node *bst_rebalance(bst_node **tree);
 
 /**
  * pretty print bst
  *
  * @params tree, prefix and false
  */
+
 
 
 void bst_pretty_print(bst_node *root,
@@ -143,4 +144,16 @@ void bst_pretty_print(bst_node *root,
                                int is_left);
 
 void bst_print(bst_node* root);
+
+/**
+ * use this to fill the array with the nodes for rebalance
+ */
+void bst_level_order_arr(bst_node **tree, int array[]);
+
+/**
+ * count bst nodes
+ *
+ */
+
+int bst_count(bst_node **tree);
 #endif

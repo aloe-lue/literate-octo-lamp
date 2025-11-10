@@ -62,27 +62,22 @@ void bst_print(bst_node* root)
 {
         char buffer[PREFIX_MAX_LEN] = "";
         
-        if (root != NULL) {
+        if (root != NULL)
                 bst_pretty_print(root, 0, buffer, sizeof(buffer), 0);
-        }
 }
 
+// new remove duplicate more efficient since the arr is already sort 
 int remove_duplicates(int *keys, int *arr, int keys_size)
 {
-        list_node *buckets = (list_node *)malloc(16 * sizeof(list_node));
-        list_node *key_entries = NULL;
         int j = 0;
-
-        for (int i = 0; i < keys_size; i++) {
-                if (!hash_set_has(&buckets, keys[i])) {
-                        hash_set_add(&key_entries, &buckets, keys[i]);
+        arr[0] = keys[0];
+        for (int i = 1; i < keys_size; i++) {
+                if (keys[i] != arr[j])
                         arr[j++] = keys[i];
-                }         
         }
-        int unique = nodes_size(&key_entries);
-        hash_set_clear(&key_entries, &buckets);
-        return unique;
+        return j;
 }
+
 
 bst_node *bst_build_tree(bst_node *root, int *arr, int start, int end)
 {
@@ -124,24 +119,24 @@ bst_node *bst_create_node(int key)
         return node;
 }
 
-void bst_insert(bst_node *root, int key)
+void bst_insert(bst_node **root, int key)
 {
         bst_node *y = NULL;
-        bst_node *tmp_root = root;
-
-        while (tmp_root != NULL) {
-                y = tmp_root;
-                if (tmp_root->key > key)
-                        tmp_root = tmp_root->left;
-                else tmp_root = tmp_root->right;
-        }
+        bst_node *x = *root;
         bst_node *z = bst_create_node(key);
+
+        while (x != NULL) {
+                y = x;
+                if (z->key < x->key) 
+                        x = x->left;
+                else x = x->right;
+        }
         z->parent = y;
-        if (y == NULL) 
-                root = z;
-        else if (tmp_root->key > z->key)
-                tmp_root->left = z;
-        else tmp_root->right = z;
+        if (y == NULL)
+                *root = z;
+        else if (z->key < y->key)
+                y->left = z;
+        else y->right = z;
 }
 
 void bst_transplant(bst_node **root, bst_node *u, bst_node *v)
@@ -193,7 +188,8 @@ bst_node* bst_successor(bst_node *root)
 
 void bst_delete(bst_node **root, int key)
 {
-        bst_node *z = bst_find(*root, key);
+        bst_node *tmp = *root;
+        bst_node *z = bst_find(tmp, key);
         if (z == NULL)
                 return;
         
@@ -219,7 +215,7 @@ void bst_delete(bst_node **root, int key)
 bst_node *bst_find(bst_node *root, int key)
 {
         bst_node *t_root = root;
-        if (key < 0 || key > INT_MAX)
+        if (key < 0 || key > INT_MAX) 
                 printf("key should be non-negative key.\n");
         while (t_root != NULL && t_root->key != key) {
                 if (key > t_root->key) 
@@ -233,7 +229,7 @@ bst_node *bst_find(bst_node *root, int key)
 
 void bst_destroy(bst_node *tree)
 {
-        if (tree == NULL) 
+        if (tree == NULL)
                 return;
         bst_destroy(tree->left);
         bst_destroy(tree->right);
@@ -244,7 +240,8 @@ list_node *bst_level_order(bst_node **tree)
 {
         bst_qll *Q = create_bst_qll();
         bst_qll_enqueue(Q, *tree);
-        list_node *ln = NULL;
+        list_node *head = NULL;
+        list_node *tail = NULL;
 
         while (Q->len != 0) {
                 bst_node *front = bst_front(Q);
@@ -254,11 +251,11 @@ list_node *bst_level_order(bst_node **tree)
                 if (front->right != NULL) 
                         bst_qll_enqueue(Q, front->right);
                 
-                append_node(&ln, front->key);
+                bst_append_node(&head, &tail ,front->key);
                 bst_qll_dequeue(Q);
         }
         free(Q);
-        return ln;
+        return head;
 }
 
 void bst_pre_order(bst_node *tree, list_node **head, list_node **tail)
@@ -373,21 +370,54 @@ int bst_is_balanced(bst_node *tree)
         return (left_is_balanced -right_is_balanced) +1;
 }
 
-bst_node *bst_rebalance(bst_node *tree)
+void bst_level_order_arr(bst_node **tree, int *array)
 {
-        list_node *in_head = NULL;
-        list_node *in_tail = NULL;
-        bst_in_order(tree, &in_head, &in_tail);
+        bst_qll *Q = create_bst_qll();
+        bst_qll_enqueue(Q, *tree);
 
-        int keys_size = nodes_size(&in_head);
-        int array[keys_size];
-        
         int i = 0;
-        while (in_head != NULL) {
-                array[i++] = in_head->key;
-                in_head = in_head->next;
-        }
+        while (Q->len != 0) {
+                bst_node *front = bst_front(Q);
+                if (front->left != NULL) 
+                        bst_qll_enqueue(Q, front->left);
 
-        destroy_nodes(&in_tail, keys_size, keys_size);
-        return bst_create(array, keys_size);
+                if (front->right != NULL) 
+                        bst_qll_enqueue(Q, front->right);
+
+                array[i++] = front->key;
+                bst_qll_dequeue(Q);
+        }
+        free(Q);
+}
+
+int bst_count(bst_node **tree)
+{
+        bst_qll *Q = create_bst_qll();
+        bst_qll_enqueue(Q, *tree);
+
+        int i = 0;
+        while (Q->len != 0) {
+                bst_node *front = bst_front(Q);
+                if (front->left != NULL) 
+                        bst_qll_enqueue(Q, front->left);
+
+                if (front->right != NULL) 
+                        bst_qll_enqueue(Q, front->right);
+
+                i++;
+                bst_qll_dequeue(Q);
+        }
+        free(Q);
+        return i;
+}
+
+bst_node *bst_rebalance(bst_node **tree)
+{
+        bst_node *tmp = *tree;
+        int keys_size = bst_count(tree);
+        int array[keys_size];
+
+        bst_level_order_arr(&tmp, array);
+        bst_node *root = bst_create(array, keys_size -1);
+        return root;
 }
