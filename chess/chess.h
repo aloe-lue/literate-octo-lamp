@@ -2,25 +2,43 @@
 #define CHESS_H
 
 // chess unicode
-#define BLACK_CHESS_PIECES  "\u265C\u265E\u265D\u265A\u265B\u265F";
-#define WHITE_CHESS_PIECES  "\u2656\u2658\u2657\u2654\u2655\u2659";
-// rook knight bishop king queen pawn
+#define B_PAWN          "\u265F"
+#define B_ROOK          "\u265C"
+#define B_KNIGHT        "\u265E"
+#define B_BISHOP        "\u265D"
+#define B_QUEEN         "\u265B"
+#define B_KING          "\u265A"
+#define W_PAWN          "\u2659"
+#define W_ROOK          "\u2656"
+#define W_KNIGHT        "\u2658"
+#define W_BISHOP        "\u2657"
+#define W_KING         "\u2654"
+#define W_QUEEN          "\u2655"
+// pawn rook knight bishop queen king
+// haha
 #define CHESS_PIECE_LOCAL   [0, 1, 2, 3, 4, 5];
+#define CHESS_SCORES        [0, 0]
 
-struct chess_8x8 {
-        int white_moves;
-        int black_moves;
-        int coordinate_2d[64][2];
-        int human_readable_2d[64][2];
-};
-
-/********************************************
- * this helps later when finding the position of scanf position like Kb6 > Kb5
+/*****************************************
+ * possible offsets would be the 56 that is queen
+ * use symbol for pawn for promotion and use it for identifying if such moves is
+ * legal
  * 
- * @params struct chess_8x8 c
- *******************************************/
-void init_chess_coordinates(int coordinate_2d[64][2],
-		int human_readable_2d[64][2]);
+ * total moves of every pieces
+ * the coordinate of current cell
+ * *************************************/
+
+typedef struct chess_piece {
+	int coordinates[56][2]; // validates chess piece moves
+	int coordinate[2];      // get posible chess piece moves
+	int square[2];          // 
+	int race;               // white pawn moves up and black pawn moves down
+        int piece;              // it should be used with visuals
+        int is_zero;            // or dead it sounds good for a computer
+        char symbol;            // 
+        int one_of_many;        // 
+        char ascii_symbol[5];
+} chess_piece;
 
 /******************************************* 
  * main function of translate chess position 8 + 8 = 16 steps would improve if
@@ -39,53 +57,6 @@ int find_chess_idx(const int RANK,
  * *******************************************/ 
 int get_index_by_chess_position(char chess_position[3]);
 
-struct rook {
-	int offsets[28][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
-
-struct knight {
-	int offsets[8][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
-
-struct bishop {
-	int offsets[28][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
-
-struct queen {
-	int offsets[56][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
-
-struct king {
-	int offsets[8][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
-
-struct pawn {
-	int offsets[4][2];
-	int xy[2];
-	int total_offsets;
-	int moves;
-	int race;
-};
 /******************************************
  * gives you the possible moves at position xy
  *
@@ -96,7 +67,7 @@ struct pawn {
  *
  ****************************************/ 
 void set_rook_coordinates(int xy[2],
-		int offsets[28][2]);
+		int offsets[56][2]);
 
 /*****************************************
  * gives you knight moves at position xy[2]
@@ -104,23 +75,23 @@ void set_rook_coordinates(int xy[2],
  * @params struct chess_piece piece
  ****************************************/
 void set_knight_coordinates(int xy[2],
-		int offsets[8][2]);
+		int offsets[56][2]);
 
 /****************************************
  * gives you bishop moves at position xy[2]
  *
  * @params struct chess_piece piece
  ***************************************/
-void set_bishop_coordinates(int cartesian2d[2],
-		int moves_cartesian_2d[28][2]);
+void set_bishop_coordinates(int xy[2],
+		int offsets[56][2]);
 
 /***************************************
  * gives you queen moves at position xy[2]
  *
  * @params struct chess_piece piece
  **************************************/
-void set_queen_coordinates(int cartesian2d[2],
-		int moves_cartesian_2d[56][2]);
+void set_queen_coordinates(int xy[2],
+		int offsets[56][2]);
 
 /**************************************
  * gives you king moves at position xy[2]
@@ -128,7 +99,7 @@ void set_queen_coordinates(int cartesian2d[2],
  * @params struct chess_piece piece
  *************************************/
 void set_king_coordinates(int xy[2],
-		int offsets[8][2]);
+		int offsets[56][2]);
 
 /*************************************
  * gives you pawn moves at position xy[2]
@@ -136,7 +107,7 @@ void set_king_coordinates(int xy[2],
  * @params struct chess_piece piece, char race[1+1]
  ***********************************/
 void set_pawn_coordinates(int xy[2],
-		int offsets[4][2],
+		int offsets[56][2],
 		int race);
 
 /**********************************
@@ -156,10 +127,45 @@ void set_coordinate_by_index(int index,
  ******************************/
 int get_index_by_coordinate(int coordinate[2]);
 
-/******************************
- *  this initializes the default position of white pawns 
+/*****************************************
+ * add ascii based on chess reading such as 1b,etc
  *
- ****************************/
-void init_white_pawn(int xy[2]);
+ * @params int coordinate[2], int cell[2]
+ * returns nothing
+ * *************************************/
+void set_square_by_coordinate(int coordinate[2],
+                int square[2]);
 
-#endif
+/*****************************************
+ * auxillary function that helps with init_chess_pieces
+ *
+ * @params int i
+ * return nothing
+ * *************************************/
+void init_pieces(int i, chess_piece **pieces);
+
+/*****************************************
+ * default placement of chess pieces
+ * 
+ * @params
+ * returns
+ * *************************************/
+chess_piece **init_chess_pieces();
+
+/*****************************************
+ * clear one by one dynamically allocated memory
+ *
+ * @params chess_piece **pieces
+ * *************************************/
+void clear_chess_pieces(chess_piece **pieces);
+
+/*****************************************
+ * show the chess piece in ascii well it's crappy
+ * i don't intend to use gtk now since I want to build chess in c
+ *
+ * @params  chess_piece **pieces
+ * @returns
+ * *************************************/
+void draw_chess_pieces(chess_piece **piece);
+
+#endif // chess.h
