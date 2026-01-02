@@ -477,7 +477,6 @@ void clear_chess_pieces(chess_piece **pieces)
         free(pieces);
 }
 
-
 void draw_chess_pieces(chess_piece **pieces)
 {
         char draw_piece[400] = "\0";
@@ -514,5 +513,88 @@ void draw_chess_pieces(chess_piece **pieces)
         }
         strcat(draw_piece, FILES);
         puts(draw_piece);
+}
+
+static int race_turn = 1; // white first
+void set_coordinates_to_piece(int piece,
+                int xy[2],
+                int coordinates[56][2])
+{
+        switch(piece) {
+        case 107: 
+                set_king_coordinates(xy, coordinates);
+                break;
+        case 113:
+                set_queen_coordinates(xy, coordinates);
+                break;
+        case 98:
+                set_bishop_coordinates(xy, coordinates);
+                break;
+        case 110:
+                set_knight_coordinates(xy, coordinates);
+                break;
+        case 114:
+                set_rook_coordinates(xy, coordinates);
+                break;
+        case 101:
+                set_pawn_coordinates(xy, coordinates, race_turn);
+                break;
+        default:
+                break;
+        }
+}
+
+int is_chess_piece_move_valid(int dest[2],
+                int coordinates[56][2])
+{
+        for (int i = 0; i < 57; i++) {
+                if (coordinates[i][0] == dest[0] &&
+                                coordinates[i][1] == dest[1])
+                        return 1;
+        }
+        return 0;
+}
+
+int set_chess_piece_to_by_char(char notation[6],
+                chess_piece **pieces) 
+{
+        char src[3] = "\0";
+        char dest[3] = "\0";
+        for (int i = 1; i < 3; i++)
+                src[i] = notation[i];
+        for (int i = 3; i < 6; i++)
+                dest[i] = notation[i];
+        // use this for fast look chess_pieces
+        // use these declarations for changing the dest values of the race piece
+        // is_zero symbol ascii_symbol and validating legal moves
+        int idx_src = get_index_by_chess_position(src);
+        int idx_dest = get_index_by_chess_position(dest);
+        if (idx_dest == -1 || idx_src == -1) return 0;
+
+        int src_xy[2] = {-1};
+        int dest_xy[2] = {-1};
+        int coordinates[56][2] = {{-1}};
+
+        set_coordinate_by_index(idx_src, src_xy);
+        set_coordinate_by_index(idx_dest, dest_xy);
+        set_coordinates_to_piece((int)notation[0], src_xy, coordinates);
+
+        int is_move_valid = is_chess_piece_move_valid(dest_xy, coordinates);
+        if (is_move_valid == 1)
+                race_turn = race_turn == 1 ? 0 : 1; // if implemented in two players
+        else return 0;
+        // replaces **pieces[idx_src]  with values empty
+        pieces[idx_dest]->race = pieces[idx_src]->race;
+        pieces[idx_dest]->piece = pieces[idx_src]->piece;
+        pieces[idx_dest]->is_zero = pieces[idx_src]->is_zero;
+        pieces[idx_dest]->symbol = pieces[idx_src]->symbol;
+        strncpy(pieces[idx_dest]->ascii_symbol, pieces[idx_src]->ascii_symbol, 5);
+        // but replace **pieces[idx_dest] with the values of the previous
+        pieces[idx_src]->race = -1;
+        pieces[idx_src]->piece = -1;
+        pieces[idx_src]->is_zero = 0;
+        pieces[idx_src]->symbol = 'e';
+        strncpy(pieces[idx_src]->ascii_symbol, "", 5);
+        return 1;
 }
 

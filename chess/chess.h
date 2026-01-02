@@ -17,7 +17,7 @@
 // pawn rook knight bishop queen king
 // haha
 #define CHESS_PIECE_LOCAL   [0, 1, 2, 3, 4, 5];
-#define CHESS_SCORES        [0, 0]
+#define CHESS_MOVES        [0, 0]
 
 /*****************************************
  * possible offsets would be the 56 that is queen
@@ -29,15 +29,13 @@
  * *************************************/
 
 typedef struct chess_piece {
-	int coordinates[56][2]; // validates chess piece moves
 	int coordinate[2];      // get posible chess piece moves
 	int square[2];          // 
 	int race;               // white pawn moves up and black pawn moves down
         int piece;              // it should be used with visuals
         int is_zero;            // or dead it sounds good for a computer
         char symbol;            // 
-        int one_of_many;        // 
-        char ascii_symbol[5];
+        char ascii_symbol[6];
 } chess_piece;
 
 /******************************************* 
@@ -62,8 +60,6 @@ int get_index_by_chess_position(char chess_position[3]);
  *
  * @params struct chess_piece piece
  * returns *void  
- * 	probably a bad idea should be vector weird or
- * 	array huh?
  *
  ****************************************/ 
 void set_rook_coordinates(int xy[2],
@@ -142,7 +138,8 @@ void set_square_by_coordinate(int coordinate[2],
  * @params int i
  * return nothing
  * *************************************/
-void init_pieces(int i, chess_piece **pieces);
+void init_pieces(int i,
+                chess_piece **pieces);
 
 /*****************************************
  * default placement of chess pieces
@@ -167,5 +164,33 @@ void clear_chess_pieces(chess_piece **pieces);
  * @returns
  * *************************************/
 void draw_chess_pieces(chess_piece **piece);
+
+/*****************************************
+ * auxillary funtion for set_chess_piece_to set coordinates based on the chess
+ * piece
+ *
+ * @params int piece, int xy[2], int coordinates[56][2]
+ * *************************************/
+void set_coordinates_to_piece(int piece,
+                int xy[2],
+                int coordinates[56][2]);
+
+/*****************************************
+ * auxillary function for set_piece_to for validating legal move
+ *
+ * @params int dest[2], int coordinates[56][2]
+ * *************************************/
+int is_chess_piece_move_valid(int dest[2],
+                int coordinates[56][2]);
+
+/*****************************************
+ * disambiguation should be prefered as it is more complex to implement notations
+ * such as N6b it is more simple to use such as usage of file&rank for example
+ *
+ * N6b5d Knight from 6b goes to 5d 
+ * @params char notation[5+1]
+ * *************************************/
+int set_chess_piece_to_by_char(char notation[6],
+                chess_piece **pieces);
 
 #endif // chess.h
