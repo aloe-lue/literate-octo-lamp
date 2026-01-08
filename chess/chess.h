@@ -20,30 +20,57 @@
 #define CHESS_MOVES        [0, 0]
 
 /*****************************************
- * possible offsets would be the 56 that is queen
- * use symbol for pawn for promotion and use it for identifying if such moves is
- * legal
+ * use coordinate for validating moves of a chess move depending on the piece
+ * race on the other hand is when you go with pawn moves and en passant move
+ * is zero is when a piece is dead maybe not needed ascii symbol is when you
+ * use it for special chess character unicode or black and white just not black
+ * and white then chess character unicode
  * 
- * total moves of every pieces
- * the coordinate of current cell
  * *************************************/
-
 typedef struct chess_piece {
-	int coordinate[2];      // get posible chess piece moves
-	int square[2];          // 
-	int race;               // white pawn moves up and black pawn moves down
-        int piece;              // it should be used with visuals
-        int is_zero;            // or dead it sounds good for a computer
-        char symbol;            // 
+	int coordinate[2];
+	int square[2];
+	int race;
+        int piece;
+        int is_zero;
+        char symbol;
         char ascii_symbol[6];
         int clr;
 } chess_piece;
 
+/******************************************************************************
+ * auxillary function that helps with setting rook and bishop coords
+ *
+ * ***************************************************************************/
+void init_rook_coord();
+void init_bishop_coord();
+
+/******************************************************************************
+ * auxillary functions that helps with between bound inclusive values 
+ * 0 <= n <= 7
+ *
+ * ***************************************************************************/
+int xy_is_between_inc(int x, int y);
+
+/******************************************************************************
+ * auxillary functions that helps with finding square[num, alpha]
+ * 
+ * ***************************************************************************/
+void set_square_x(int coordinate[2], int square[2]);
+void set_square_y(int coordinate[2], int square[2]);
+
+/******************************************************************************
+ * auxillary function that helps helps with finding index
+ *
+ * ***************************************************************************/
+int get_rank_row(const int RANK);
+int get_file_column(const int FILEC);
 /******************************************* 
  * main function of translate chess position 8 + 8 = 16 steps would improve if
  * not lazy.
  *
  * @params const int RANK, const int FILECC
+ * @returns int
  * ****************************************/ 
 int find_chess_idx(const int RANK, const int FILECC);
 
@@ -56,7 +83,7 @@ int find_chess_idx(const int RANK, const int FILECC);
 int get_index_by_chess_position(char chess_position[3]);
 
 /******************************************
- * gives you the possible moves at position xy
+ * set rook possible moves at position xy
  *
  * @params struct chess_piece piece
  * returns *void  
@@ -65,21 +92,21 @@ int get_index_by_chess_position(char chess_position[3]);
 void set_rook_coordinates(int xy[2], int offsets[56][2]);
 
 /*****************************************
- * gives you knight moves at position xy[2]
+ * fill offsets knight moves at position xy[2]
  *
  * @params struct chess_piece piece
  ****************************************/
 void set_knight_coordinates(int xy[2], int offsets[56][2]);
 
 /****************************************
- * gives you bishop moves at position xy[2]
+ * set bishop tracks at position xy[2]
  *
  * @params struct chess_piece piece
  ***************************************/
 void set_bishop_coordinates(int xy[2], int offsets[56][2]);
 
 /***************************************
- * gives you queen moves at position xy[2]
+ * sets queen tracks at position xy[2]
  *
  * @params struct chess_piece piece
  **************************************/
@@ -92,6 +119,12 @@ void set_queen_coordinates(int xy[2], int offsets[56][2]);
  *************************************/
 void set_king_coordinates(int xy[2], int offsets[56][2]);
 
+/******************************************************************************
+ * auxillary function for the set pawn coordinates
+ *
+ * @params int xy[2], int offsets[56][2], int race
+ * ***************************************************************************/
+void set_pawn_diagonal_coord(int xy[2], int offsets[56][2], int race);
 /*************************************
  * gives you pawn moves at position xy[2]
  *
@@ -105,8 +138,8 @@ void set_pawn_coordinates(int xy[2], int offsets[56][2], int race);
  * @params int index, int coordinate[2]
  * returns nothing
  ********************************/
-
 void set_coordinate_by_index(int index, int coordinate[2]);
+
 /********************************
  * use this to find chess piece by coordinate or to find exactly the place to
  * put the chess piece
@@ -129,6 +162,12 @@ void set_square_by_coordinate(int coordinate[2], int square[2]);
  * @params int i
  * return nothing
  * *************************************/
+void init_king(int i);
+void init_queen(int i);
+void init_bishop(int i);
+void init_knight(int i);
+void init_rook(int i);
+void init_pawn(int i);
 void init_pieces(int i);
 
 /*****************************************
@@ -140,8 +179,7 @@ void init_pieces(int i);
 void init_chess_pieces();
 
 /*****************************************
- * show the chess piece in ascii well it's crappy
- * i don't intend to use gtk now since I want to build chess in c
+ * show the chess piece in terminal
  *
  * @params  chess_piece **pieces
  * @returns
@@ -156,6 +194,45 @@ void draw_chess_pieces();
  * *************************************/
 void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2]);
 
+/******************************************************************************
+ * this checks if such moves of king is valid or not
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * return int
+ * ***************************************************************************/
+int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+/*****************************************
+ * this checks if such moves of queen is valid or not
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * return int
+ * *************************************/
+int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+
+/*****************************************
+ * i have to separate rook moves from this since there is a special moves for
+ * the rook
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * @returns int
+ * *************************************/
+int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+
+/*****************************************
+ * helps with king for special move called castling
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * *************************************/
+int to_left_castling(int index_src, int index_dest, int coordinates[56][2]);
+int to_right_castling(int index_src, int index_dest, int coordinates[56][2]);
+
+/*****************************************
+ * this checks if such rook move is valid or not 
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * *************************************/
+int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+
 /*****************************************
  * this checks if the moves of knight is valid or not
  *
@@ -163,6 +240,14 @@ void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2]);
  * returns int
  * *************************************/
 int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+
+/******************************************************************************
+ * this checks if such move is legal or not
+ *
+ * @params int index_src, int index_dest, int coordinates[56][2]
+ * returns int
+ * ***************************************************************************/
+int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2]);
 
 /*****************************************
  * auxillary function for set_piece_to for validating legal move
