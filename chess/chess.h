@@ -39,13 +39,6 @@ typedef struct chess_piece {
 } chess_piece;
 
 /******************************************************************************
- * auxillary function that helps with setting rook and bishop coords
- *
- * ***************************************************************************/
-void init_rook_coord();
-void init_bishop_coord();
-
-/******************************************************************************
  * auxillary functions that helps with between bound inclusive values 
  * 0 <= n <= 7
  *
@@ -104,7 +97,6 @@ void set_knight_coordinates(int xy[2], int offsets[56][2]);
  * @params struct chess_piece piece
  ***************************************/
 void set_bishop_coordinates(int xy[2], int offsets[56][2]);
-
 /***************************************
  * sets queen tracks at position xy[2]
  *
