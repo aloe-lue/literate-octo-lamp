@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "chess.h"
@@ -51,7 +52,7 @@ int xy_is_between_inc(int x, int y)
 
 void set_rook_coordinates(int xy[2], int offsets[56][2])
 {
-	int rook[4][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0}};
+	int rook[4][2] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 	int j = 0;
 	for (int i = 0; i < 28; i++) {
 		int x = rook[j][0];
@@ -113,7 +114,7 @@ void set_knight_coordinates(int xy[2], int offsets[56][2])
 
 void set_bishop_coordinates(int xy[2], int offsets[56][2])
 {
-	int bishop[][2] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+	int bishop[][2] = { { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } };
 	int j = 0;
 	for (int i = 0; i < 28; i++) {
 		int x = bishop[j][0];
@@ -156,7 +157,7 @@ void set_bishop_coordinates(int xy[2], int offsets[56][2])
 void set_queen_coordinates(int xy[2], int offsets[56][2])
 {
 	set_rook_coordinates(xy, offsets);
-	int bishop[4][2] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+	int bishop[4][2] = { { 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 } };
 	int j = 0;
 	for (int i = 28; i < 56; i++) {
 		int x = bishop[j][0];
@@ -240,8 +241,8 @@ void set_pawn_diagonal_coord(int xy[2], int offsets[56][2], int race)
 			break;
 		}
 
-		int ax = x + xy[0];
-		int ay = y + xy[1];
+		int ax = xy[0] + x;
+		int ay = xy[1] + y;
 
 	        if (xy_is_between_inc(ax, ay)) {
 			offsets[i][0] = ax;
@@ -250,7 +251,6 @@ void set_pawn_diagonal_coord(int xy[2], int offsets[56][2], int race)
 			offsets[i][0] = 8;
 			offsets[i][1] = 8;
 		}
-
 	}
 }
 
@@ -274,7 +274,7 @@ void set_pawn_coordinates(int xy[2], int offsets[56][2], int race)
 		int ay = xy[1] + y;
 		int bound = xy_is_between_inc(ax, ay);
 
-		if (race == 1 && bound  && (xy[1] > 5)) {
+		if (race == 1 && bound && (xy[1] > 5)) {
 			offsets[i][0] = ax;
 			offsets[i][1] = ay;
 		} else if (race == 1 && bound && (xy[1] <= 5)) {
@@ -321,26 +321,26 @@ int get_index_by_coordinate(int coordinate[2])
 
 void set_square_x(int coordinate[2], int square[2])
 {
-        int j = 0;
-        for (int i = 56; i > 47; i--) {
-                if (coordinate[0] == j) {
-                        square[0] = i;
-                        break;
-                }
-                j++;
-        }
+	int x = 0;
+	for (int i = 97; i <= 104; i++) {
+		if (coordinate[0] == x) {
+			square[0] = i;
+			break;
+		}
+		x++;
+	}
 }
 
 void set_square_y(int coordinate[2], int square[2])
 {
-        int k = 0;
-        for (int i = 97; i < 105; i++) {
-                if (coordinate[1] == k) {
-                        square[1] = i;
-                        break;
-                } 
-                k++;
-        }
+	int y = 0;
+	for (int i = 56; i >= 48; i--) {
+		if (coordinate[1] == y) {
+			square[1] = i;
+			break;
+		}
+		y++;
+	}
 }
 
 void set_square_by_coordinate(int coordinate[2], int square[2])
@@ -349,129 +349,178 @@ void set_square_by_coordinate(int coordinate[2], int square[2])
 	set_square_y(coordinate, square);
 }
 
-chess_piece pieces[64];
-void init_king(int i)
+void init_king(chess_piece **pieces)
 {
-        if (i == 4 || i == 60) {
-                pieces[i].piece = 5;
-                pieces[i].symbol = 'k';
-
-                if (i < 5)
-                        strcpy(pieces[i].ascii_symbol, B_KING);
-                else
-                        strcpy(pieces[i].ascii_symbol, W_KING);
-        }
+	int king_placements[] = { 4, 60 };
+	for (int i = 0; i < 2; i++) {
+		int k_loc = king_placements[i];
+		pieces[k_loc]->piece = 5;
+		pieces[k_loc]->symbol = 'k';
+		
+		switch(k_loc) {
+		case 4:
+                	strcpy(pieces[k_loc]->ascii_symbol, B_KING);
+			break;
+		case 60:
+                	strcpy(pieces[k_loc]->ascii_symbol, W_KING);
+			break;
+		}
+	}
 }
 
-void init_queen(int i)
+void init_queen(chess_piece **pieces)
 {
-        if (i == 3 || i == 59) {
-                pieces[i].piece = 4;
-                pieces[i].symbol = 'q';
-
-                if (i < 4)
-                        strcpy(pieces[i].ascii_symbol, B_QUEEN);
-                else
-                        strcpy(pieces[i].ascii_symbol, W_QUEEN);
-        }
+	int queen_placements[] = { 3, 59 };
+	for (int i = 0; i < 2; i++) {
+		int q_loc = queen_placements[i];
+		pieces[q_loc]->piece = 4;
+		pieces[q_loc]->symbol = 'q';
+		
+		switch(q_loc) {
+		case 3:
+                	strcpy(pieces[q_loc]->ascii_symbol, B_QUEEN);
+			break;
+		case 59:
+                	strcpy(pieces[q_loc]->ascii_symbol, W_QUEEN);
+			break;
+		}
+	}
 }
 
-void init_bishop(int i)
+void init_bishop(chess_piece **pieces)
 {
-        if (i == 2 || i == 5 || i == 58 || i == 61) {
-                pieces[i].piece = 3;
-                pieces[i].symbol = 'b';
+        int bishop_placements[] = { 2, 5, 58, 61 };
+	for (int i = 0; i < 4; i++) {
+		int b_loc = bishop_placements[i];
+		pieces[b_loc]->piece = 3;
+		pieces[b_loc]->symbol = 'b';
 
-                if (i < 6)
-                        strcpy(pieces[i].ascii_symbol, B_BISHOP);
-                else
-                        strcpy(pieces[i].ascii_symbol, W_BISHOP);
-        }
+		switch(b_loc) {
+		case 1:
+		case 6:
+			strcpy(pieces[b_loc]->ascii_symbol, B_BISHOP);
+			break;
+		case 58:
+		case 61:
+			strcpy(pieces[b_loc]->ascii_symbol, B_BISHOP);
+			break;
+		}
+	}
 }
 
-void init_knight(int i)
+void init_knight(chess_piece **pieces )
 {
-        if (i == 1 || i == 6 || i == 57 || i == 62) {
-                pieces[i].piece = 2;
-                pieces[i].symbol = 'n';
+	int knight_placements[] = { 1, 6, 57, 62 };
+	for (int i = 0; i < 4; i++) {
+		int n_loc = knight_placements[i];
+		pieces[n_loc]->piece = 2;
+		pieces[n_loc]->symbol = 'n';
 
-                if (i < 7)
-                        strcpy(pieces[i].ascii_symbol, B_KNIGHT);
-                else 
-                        strcpy(pieces[i].ascii_symbol, W_KNIGHT);
-        }
+		switch(n_loc) {
+		case 1:
+		case 6:
+			strcpy(pieces[n_loc]->ascii_symbol, B_KNIGHT);
+			break;
+		case 57:
+		case 62:
+			strcpy(pieces[n_loc]->ascii_symbol, W_KNIGHT);
+			break;
+		}
+	}
+
 }
 
-void init_rook(int i)
+void init_rook(chess_piece **pieces)
 {
-        if (i == 0 || i == 7 || i == 56 || i == 63) {
-                pieces[i].piece = 1;
-                pieces[i].symbol = 'r';
-                if (i < 8)
-                        strcpy(pieces[i].ascii_symbol, B_ROOK);
-                else  
-                        strcpy(pieces[i].ascii_symbol, W_ROOK);
-        }
-}
-void init_pawn(int i)
-{
-        if ((i > 7 && i < 16) || (i > 47 && i < 56)) {
-                pieces[i].piece = 0;
-                pieces[i].symbol = 'e';
+	int rook_places[] = { 0, 7, 56, 63 };
+	for (int i = 0; i < 4; i++) {
+		int r_loc = rook_places[i];
+		pieces[r_loc]->piece = 1;
+		pieces[i]->symbol = 'r';
 
-                if (i < 16)
-                        strcpy(pieces[i].ascii_symbol, B_PAWN);
-                else
-                        strcpy(pieces[i].ascii_symbol, W_PAWN);
-        }
+		switch(r_loc) {
+		case 0:
+		case 7:
+                	strcpy(pieces[r_loc]->ascii_symbol, B_ROOK);
+			break;
+		case 56:
+		case 63:
+                        strcpy(pieces[r_loc]->ascii_symbol, W_ROOK);
+			break;
+		}
+	}
 }
 
-void init_pieces(int i)
+void init_pawn(chess_piece **pieces)
 {
-	init_king(i);
-	init_queen(i);
-	init_bishop(i);
-	init_knight(i);
-	init_rook(i);
-	init_pawn(i);
+	for (int i = 8; i < 16; i++) {
+        	pieces[i]->piece = 0;
+        	pieces[i]->symbol = 'e';
+        	strcpy(pieces[i]->ascii_symbol, B_PAWN);
+	}
+	for (int i = 48; i < 56; i++) {
+        	pieces[i]->piece = 0;
+        	pieces[i]->symbol = 'e';
+        	strcpy(pieces[i]->ascii_symbol, W_PAWN);
+	}
 }
-void init_chess_pieces()
+
+chess_piece **init_chess_pieces()
 {
+	chess_piece **pieces = malloc(sizeof(chess_piece) * 64);
+	if (pieces == NULL) {
+		fprintf(stderr, "malloc fail: init_chess_pieces");
+		exit(1);
+	}
         int bit = 0;
         for (int i = 0; i < 64; i++) {
-                pieces[i].race = -1;
-                pieces[i].piece = -1;
-                pieces[i].is_zero = 0;
+		pieces[i] = malloc(sizeof(chess_piece));
+		if (pieces[i] == NULL) {
+			fprintf(stderr, "malloc fail: init_chess_pieces");
+			exit(1);
+		}
+       		pieces[i]->race = -1;
+        	pieces[i]->piece = -1;
+        	pieces[i]->is_zero = 0;
 
-                if (bit == 0 && (pieces[i].piece = -1))
-                        strcpy(pieces[i].ascii_symbol, " □ ");
-                if (bit == 1 && (pieces[i].piece = -1))
-                        strcpy(pieces[i].ascii_symbol, " ■ ");
+        	if (bit == 0 && (pieces[i]->piece = -1))
+        	        strcpy(pieces[i]->ascii_symbol, " □ ");
+        	if (bit == 1 && (pieces[i]->piece = -1))
+        	        strcpy(pieces[i]->ascii_symbol, " ■ ");
 
-                if (i < 16) { 
-                        pieces[i].race = 0;
-                        pieces[i].is_zero = 1;
-                }
-                if (i > 47) {
-                        pieces[i].race = 1;
-                        pieces[i].is_zero = 1;
-                }
-                int coordinate[2] = {-1};
-                set_coordinate_by_index(i, coordinate);
-                for (int j = 0; j < 2; j++)
-                        pieces[i].coordinate[j] = coordinate[j];
-                init_pieces(i);
-                set_square_by_coordinate(coordinate, pieces[i].square);
+        	if (i < 16) { 
+        	        pieces[i]->race = 0;
+        	        pieces[i]->is_zero = 1;
+        	}
+        	if (i > 47) {
+        	        pieces[i]->race = 1;
+        	        pieces[i]->is_zero = 1;
+        	}
+        	int coordinate[2] = {-1};
+        	set_coordinate_by_index(i, coordinate);
 
-                pieces[i].clr = bit;
-                bit = bit == 0 ? 1 : 0;
-                if ((i+1) % 8 == 0)
-                        bit = bit == 0 ? 1 : 0;
+        	for (int j = 0; j < 2; j++)
+        	        pieces[i]->coordinate[j] = coordinate[j];
+
+        	set_square_by_coordinate(coordinate, pieces[i]->square);
+
+        	pieces[i]->clr = bit;
+        	bit = bit == 0 ? 1 : 0;
+
+        	if ((i+1) % 8 == 0)
+        	        bit = bit == 0 ? 1 : 0;
         }
+	return pieces;
 }
 
+void free_chess_pieces(chess_piece **pieces)
+{
+	for (int i = 0; i < 64; i++)
+		free(pieces[i]);
+	free(pieces);
+}
 
-void draw_chess_pieces() 
+void draw_chess_pieces(chess_piece **pieces) 
 {
         const char *FILES = " *  a  b  c  d  e  f  g  h  *\n";
         char rank = 8;
@@ -487,7 +536,7 @@ void draw_chess_pieces()
                 if (i % 8 == 0)
                         strcat(squares, rank_char);
 
-                strcat(squares, pieces[i].ascii_symbol);
+                strcat(squares, pieces[i]->ascii_symbol);
                 if ((i+1) % 8 == 0) {
                         strcat(squares, rank_char);
                         strcat(squares, "\n");
@@ -499,7 +548,10 @@ void draw_chess_pieces()
 }
 
 static int race_turn = 1; // white first
-void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2])
+void set_coordinates_to_piece(int piece,
+		int xy[2],
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
         switch(piece) {
         case 5: 
@@ -525,38 +577,41 @@ void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2])
         }
 }
 
-void set_chess_piece_dest(int idx_dest, int idx_src)
+void set_chess_piece_dest(int idx_dest, int idx_src, chess_piece **pieces)
 {
 	// you want to separate this values
-        // replaces **pieces[idx_src]  with values empty
-        pieces[idx_dest].race = pieces[idx_src].race;
-        pieces[idx_dest].piece = pieces[idx_src].piece;
-        pieces[idx_dest].is_zero = pieces[idx_src].is_zero;
-        pieces[idx_dest].symbol = pieces[idx_src].symbol;
-        strncpy(pieces[idx_dest].ascii_symbol,
-			pieces[idx_src].ascii_symbol,
+        // replaces **pieces[idx_src]-> with values empty
+        pieces[idx_dest]->race = pieces[idx_src]->race;
+        pieces[idx_dest]->piece = pieces[idx_src]->piece;
+        pieces[idx_dest]->is_zero = pieces[idx_src]->is_zero;
+        pieces[idx_dest]->symbol = pieces[idx_src]->symbol;
+        strncpy(pieces[idx_dest]->ascii_symbol,
+			pieces[idx_src]->ascii_symbol,
                        	5);
 }
 
-void set_left_square(int idx_src)
+void set_left_square(int idx_src, chess_piece **pieces)
 {
-        pieces[idx_src].race = -1;
-        pieces[idx_src].piece = -1;
-        pieces[idx_src].is_zero = 0;
-        pieces[idx_src].symbol = '\0';
-        strncpy(pieces[idx_src].ascii_symbol,
-			pieces[idx_src].clr == 1 ? " ■ " : " □ ",
+        pieces[idx_src]->race = -1;
+        pieces[idx_src]->piece = -1;
+        pieces[idx_src]->is_zero = 0;
+        pieces[idx_src]->symbol = '\0';
+        strncpy(pieces[idx_src]->ascii_symbol,
+			pieces[idx_src]->clr == 1 ? " ■ " : " □ ",
                        	5);
 }
 
-int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_king_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
 	int is_valid = 0;
 	for (int i = 0; i < 8; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
-		int index = (int)get_index_by_coordinate(coordinate);
+		int index = get_index_by_coordinate(coordinate);
 		
 		if (index == index_dest) {
 			is_valid = 1;
@@ -566,19 +621,22 @@ int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2])
 	if (!is_valid)
 		return 0;
 	// so long as the dest isn't the same race as the src.
-	int is_ally = (int)pieces[index_dest].race == pieces[index_src].race;
+	int is_ally = (int)pieces[index_dest]->race == pieces[index_src]->race;
 	if (is_ally)
 		return 0;
 	return 1;
 }
 
-int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_queen_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
-	int start_track = 0;
+	int begin_track = 0;
 	int end_track = 0;
 	for (int i = 0; i < 56; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
 		int index = get_index_by_coordinate(coordinate);
 
@@ -587,15 +645,15 @@ int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2])
 			break;
 		}
 	}
-	start_track = (end_track / 7) * 7;
-	for (int i = start_track; i <= end_track; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+	begin_track = (int)(end_track / 7) * 7;
+	for (int i = begin_track; i <= end_track; i++) {
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
 		int index = get_index_by_coordinate(coordinate);
-		int is_ally = (pieces[index].piece >= 0 &&
-			pieces[index].piece <= 5) &&
-			pieces[index_src].race == pieces[index].race;
+		int is_ally = (pieces[index]->piece >= 0 &&
+			pieces[index]->piece <= 5) &&
+			pieces[index_src]->race == pieces[index]->race;
 
 		if (is_ally)
 			return 0;
@@ -603,28 +661,31 @@ int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2])
 	return 1;
 }
 
-int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_bishop_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
-	int start_track = 0;
+	int begin_track = 0;
 	int end_track = 0;
 	for (int i = 0; i < 28; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
-		int index = (int)get_index_by_coordinate(coordinate);
+		int index = get_index_by_coordinate(coordinate);
 
 		if (index == index_dest) {
 			end_track = i;
 			break;
 		}
 	}
-	start_track = (int)(end_track / 7) * 7;
-	for (int i = start_track; i != end_track; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+	begin_track = (int)(end_track / 7) * 7;
+	for (int i = begin_track; i != end_track; i++) {
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
-		int index = (int)get_index_by_coordinate(coordinate);
-		int is_ally = pieces[index_src].race == pieces[index].race;
+		int index = get_index_by_coordinate(coordinate);
+		int is_ally = pieces[index_src]->race == pieces[index]->race;
 
 		if (is_ally)
 			return 0;
@@ -632,8 +693,10 @@ int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2])
 	return 1;
 }
 
-
-int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_knight_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
 	int is_valid = 0;
 	for (int i = 0; i < 8; i++) {
@@ -650,25 +713,28 @@ int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2])
 	if (!is_valid)
 		return 0;
 	// so long as the dest isn't the same race as the src.
-	int is_ally = (int)pieces[index_dest].race == pieces[index_src].race;
+	int is_ally = pieces[index_dest]->race == pieces[index_src]->race;
 	if (is_ally)
 		return 0;
 	return 1;
 }
 
-int to_right_castling(int index_src, int index_dest, int coordinates[56][2])
+int to_right_castling(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
 	int indexes[7] = {-1};
 	int j = 0;
 	int is_in_dest = 0;
 	for (int i = 7; i < 14; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
 		int index = get_index_by_coordinate(coordinate);
 
-		if (pieces[index].piece >= 0 && pieces[index].piece <= 4)
-			indexes[j++] = pieces[index].piece;
+		if (pieces[index]->piece >= 0 && pieces[index]->piece <= 4)
+			indexes[j++] = pieces[index]->piece;
 
 		if (index == index_dest) {
 			is_in_dest = 1;
@@ -687,11 +753,14 @@ int to_right_castling(int index_src, int index_dest, int coordinates[56][2])
 		return 0;
 		
 	// king before rook
-	set_chess_piece_dest(index_dest-1, index_dest);
+	set_chess_piece_dest(index_dest-1, index_dest, pieces);
 	return is_no_block;
 }
 
-int to_left_castling(int index_src, int index_dest, int coordinates[56][2])
+int to_left_castling(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
 	int indexes[7] = {-1};
 	int j = 0;
@@ -702,8 +771,8 @@ int to_left_castling(int index_src, int index_dest, int coordinates[56][2])
 		int coordinate[2] = { x, y };
 		int index = get_index_by_coordinate(coordinate);
 
-		if (pieces[index].piece >= 0 && pieces[index].piece <= 4)
-			indexes[j++] = pieces[index].piece;
+		if (pieces[index]->piece >= 0 && pieces[index]->piece <= 4)
+			indexes[j++] = pieces[index]->piece;
 
 		if (index == index_dest) {
 			is_in_dest = 1;
@@ -721,29 +790,34 @@ int to_left_castling(int index_src, int index_dest, int coordinates[56][2])
 	if (!is_no_block) return 0;
 
 	// king after rook
-	set_chess_piece_dest(index_dest+1, index_dest);
+	set_chess_piece_dest(index_dest+1, index_dest, pieces);
 	return is_no_block;
 }
 
-int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_rook_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
-	int is_our_king = pieces[index_src].race == pieces[index_dest].race &&
-		pieces[index_dest].piece == 5 &&
-		((pieces[index_src].race == 1 && index_src >= 32) ||
-		 (pieces[index_src].race == 0 && index_src <= 40));
+	int is_our_king = pieces[index_src]->race == pieces[index_dest]->race &&
+		pieces[index_dest]->piece == 5 &&
+		((pieces[index_src]->race == 1 && index_src >= 32) ||
+		 (pieces[index_src]->race == 0 && index_src <= 32));
 
 	if (is_our_king) { // order castling, DOOO ITTT!!! as long as
 		if (index_dest > index_src)
 			return to_right_castling(index_src,
 					index_dest,
-					coordinates);
+					coordinates,
+					pieces);
 		else if (index_dest < index_src)
 			return to_left_castling(index_src,
 					index_dest,
-					coordinates);
+					coordinates,
+					pieces);
 		return 0;
 	}
-	int start_track = 0;
+	int begin_track = 0;
 	int end_track = 0;
 	for (int i = 0; i < 28; i++) {
 		int x = (int)coordinates[i][0];
@@ -756,21 +830,24 @@ int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2])
 			break;
 		}
 	}
-	start_track = (int)(end_track / 7) * 7;
-	for (int i = start_track; i <= end_track; i++) {
-		int x = (int)coordinates[i][0];
-		int y = (int)coordinates[i][1];
+	begin_track = (int)(end_track / 7) * 7;
+	for (int i = begin_track; i <= end_track; i++) {
+		int x = coordinates[i][0];
+		int y = coordinates[i][1];
 		int coordinate[2] = { x, y };
-		int index = (int)get_index_by_coordinate(coordinate);
+		int index = get_index_by_coordinate(coordinate);
 
-		if (pieces[index].piece >= 0 && pieces[index].piece <= 5 && 
-				pieces[index].race == pieces[index_src].race)
+		if (pieces[index]->piece >= 0 && pieces[index]->piece <= 5 && 
+				pieces[index]->race == pieces[index_src]->race)
 			return 0;
 	}
 	return 1;
 }
 
-int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2])
+int is_pawn_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces)
 {
 	int is_move_forward = 0; 
 	for (int i = 0; i < 2; i++) {
@@ -780,7 +857,7 @@ int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2])
 		int index = get_index_by_coordinate(axy);
 
 		// check if what's in front of it has piece
-		if (pieces[index].piece >= 0 && pieces[index].piece <= 5)
+		if (pieces[index]->piece >= 0 && pieces[index]->piece <= 5)
 			return 0;
 
 		if (index_dest == index)
@@ -789,6 +866,9 @@ int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2])
 	if (is_move_forward)
 		return 1;
 
+	int en_passant_bound_w = index_src <= 32;
+	int en_passant_bound_b = index_src >= 32;
+
 	for (int i = 2; i < 4; i++) {
 		int ax = coordinates[i][0];
 		int ay = coordinates[i][1];
@@ -796,8 +876,9 @@ int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2])
 		int index = get_index_by_coordinate(axy);
 
 		if (index == index_dest &&
-				pieces[index_src].race != pieces[index].race)
+				pieces[index_src]->race != pieces[index]->race)
 			return 1;
+
 	}
 	return 0;
 }
@@ -806,15 +887,40 @@ int is_chess_piece_move_valid(int dest[2],
                 int index_src,
 		int index_dest,
 		int piece,
-                int coordinates[56][2])
+                int coordinates[56][2],
+		chess_piece **pieces)
 {
 	switch(piece) {
-	case 5: return is_king_move_valid(index_src, index_dest, coordinates);
-	case 4: return is_queen_move_valid(index_src, index_dest, coordinates);
-	case 3: return is_bishop_move_valid(index_src,index_dest, coordinates);
-	case 2: return is_knight_move_valid(index_src, index_dest, coordinates);
-	case 1: return is_rook_move_valid(index_src, index_dest, coordinates);
-	case 0: return is_pawn_move_valid(index_src, index_dest, coordinates);
+	case 5:
+		return is_king_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
+	case 4:
+		return is_queen_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
+	case 3:
+		return is_bishop_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
+	case 2:
+		return is_knight_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
+	case 1:
+		return is_rook_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
+	case 0:
+		return is_pawn_move_valid(index_src,
+				index_dest,
+				coordinates,
+				pieces);
 	default: return 0;
 	}
 }
@@ -839,13 +945,13 @@ int get_chess_piece(int i)
 	}
 }
 /******************************************************************************
- * 5 for invalid piece
- * 4 for invalid destination or source
+ * 5 invalid piece
+ * 4 invalid destination or source
  * 3 attempt to change enemy pieces
  * 2 invalid move
- * 0 success move
+ * 1 success move
  * ***************************************************************************/
-int set_chess_piece_to_by_char(char notation[6]) 
+int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces) 
 {
 	// break notation by piece source and destination
 	int piece = get_chess_piece((int)notation[0]);
@@ -867,7 +973,7 @@ int set_chess_piece_to_by_char(char notation[6])
         if (idx_dest == 64 || idx_src == 64)
                 return 4; // over the bound error
 
-	if (pieces[idx_src].race != race_turn)
+	if (pieces[idx_src]->race != race_turn)
 		return 3; // don't allow user moving your pice
 
 	// assign the source and destination coordinates
@@ -880,14 +986,15 @@ int set_chess_piece_to_by_char(char notation[6])
 
         set_coordinate_by_index(idx_src, src_xy);
         set_coordinate_by_index(idx_dest, dest_xy);
-        set_coordinates_to_piece(piece, src_xy, coordinates);
+        set_coordinates_to_piece(piece, src_xy, coordinates, pieces);
 
 	// check if move is valid this will check if 
         int is_move_valid = is_chess_piece_move_valid(dest_xy,
-                        idx_src,
-			idx_dest,
-			piece,
-                        coordinates); // 0 || 1
+				idx_src,
+				idx_dest,
+				piece,
+				coordinates,
+				pieces); // 0 || 1
 	
         if (is_move_valid)
                 race_turn = race_turn == 1 ? 0 : 1;
@@ -895,8 +1002,8 @@ int set_chess_piece_to_by_char(char notation[6])
                 return 2;
 
 	// move the chess piece
-	set_chess_piece_dest(idx_dest, idx_src);
-	set_left_square(idx_src);
-        return 0;
+	set_chess_piece_dest(idx_dest, idx_src, pieces);
+	set_left_square(idx_src, pieces);
+        return 1;
 }
 

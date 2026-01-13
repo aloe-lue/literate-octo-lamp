@@ -154,13 +154,13 @@ void set_square_by_coordinate(int coordinate[2], int square[2]);
  * @params int i
  * return nothing
  * *************************************/
-void init_king(int i);
-void init_queen(int i);
-void init_bishop(int i);
-void init_knight(int i);
-void init_rook(int i);
-void init_pawn(int i);
-void init_pieces(int i);
+void init_king(chess_piece **pieces);
+void init_queen(chess_piece **pieces);
+void init_bishop(chess_piece **pieces);
+void init_knight(chess_piece **pieces);
+void init_rook(chess_piece **pieces);
+void init_pawn(chess_piece **pieces);
+void init_pieces(chess_piece **pieces);
 
 /*****************************************
  * default placement of chess pieces
@@ -168,15 +168,21 @@ void init_pieces(int i);
  * @params
  * returns
  * *************************************/
-void init_chess_pieces();
+chess_piece **init_chess_pieces();
 
+/******************************************************************************
+ * free malloc chess pieces above
+ * 
+ * @params chess_piece **pieces
+ * ***************************************************************************/
+void free_chess_pieces(chess_piece **pieces);
 /*****************************************
  * show the chess piece in terminal
  *
  * @params  chess_piece **pieces
  * @returns
  * *************************************/
-void draw_chess_pieces();
+void draw_chess_pieces(chess_piece **pieces);
 
 /*****************************************
  * auxillary funtion for set_chess_piece_to set coordinates based on the chess
@@ -184,7 +190,10 @@ void draw_chess_pieces();
  *
  * @params int piece, int xy[2], int coordinates[56][2]
  * *************************************/
-void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2]);
+void set_coordinates_to_piece(int piece,
+		int xy[2],
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /******************************************************************************
  * this checks if such moves of king is valid or not
@@ -192,14 +201,20 @@ void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2]);
  * @params int index_src, int index_dest, int coordinates[56][2]
  * return int
  * ***************************************************************************/
-int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_king_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 /*****************************************
  * this checks if such moves of queen is valid or not
  *
  * @params int index_src, int index_dest, int coordinates[56][2]
  * return int
  * *************************************/
-int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_queen_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /*****************************************
  * i have to separate rook moves from this since there is a special moves for
@@ -208,22 +223,34 @@ int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2]);
  * @params int index_src, int index_dest, int coordinates[56][2]
  * @returns int
  * *************************************/
-int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_bishop_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /*****************************************
  * helps with king for special move called castling
  *
  * @params int index_src, int index_dest, int coordinates[56][2]
  * *************************************/
-int to_left_castling(int index_src, int index_dest, int coordinates[56][2]);
-int to_right_castling(int index_src, int index_dest, int coordinates[56][2]);
+int to_left_castling(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
+int to_right_castling(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /*****************************************
  * this checks if such rook move is valid or not 
  *
  * @params int index_src, int index_dest, int coordinates[56][2]
  * *************************************/
-int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_rook_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /*****************************************
  * this checks if the moves of knight is valid or not
@@ -231,7 +258,10 @@ int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2]);
  * @params int index_src, int index_dest, int coordinates[56][2]
  * returns int
  * *************************************/
-int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_knight_move_valid(int index_src,
+		int index_dest,
+		int coordinates[56][2],
+		chess_piece **pieces);
 
 /******************************************************************************
  * this checks if such move is legal or not
@@ -239,7 +269,8 @@ int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2]);
  * @params int index_src, int index_dest, int coordinates[56][2]
  * returns int
  * ***************************************************************************/
-int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2]);
+int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2],
+		chess_piece **pieces);
 
 /*****************************************
  * auxillary function for set_piece_to for validating legal move
@@ -249,8 +280,10 @@ int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2]);
 int is_chess_piece_move_valid(int dest[2],
                 int index_src,
                 int index_dest,
-		int chess_piece,
-                int coordinates[56][2]);
+		int piece,
+                int coordinates[56][2],
+		chess_piece **pieces);
+
 
 /*****************************************
  * auxillary function for getting the chess piece by notation k q b n r e
@@ -267,7 +300,7 @@ int get_chess_piece(int i);
  * @params int idx_dest, int idx_src
  * @returns
  * *************************************/
-void set_chess_piece_dest(int idx_dest, int idx_src);
+void set_chess_piece_dest(int idx_dest, int idx_src, chess_piece **pieces);
 
 /*****************************************
  * set previous set dest with no values in place.
@@ -275,7 +308,7 @@ void set_chess_piece_dest(int idx_dest, int idx_src);
  * @params idx_src
  * @returns
  * *************************************/
-void set_left_square(int idx_src);
+void set_left_square(int idx_src, chess_piece **pieces);
 
 /*****************************************
  * disambiguation should be prefered as it is more complex to implement notations
@@ -284,6 +317,6 @@ void set_left_square(int idx_src);
  * N6b5d Knight from 6b goes to 5d 
  * @params char notation[5+1]
  * *************************************/
-int set_chess_piece_to_by_char(char notation[6]);
+int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces);
 
 #endif // chess.h
