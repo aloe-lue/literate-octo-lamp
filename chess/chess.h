@@ -32,7 +32,7 @@ typedef struct chess_piece {
 	int square[2];
 	int race;
         int piece;
-        int is_zero;
+        int contain_piece;
         char symbol;
         char ascii_symbol[6];
         int clr;
@@ -111,12 +111,6 @@ void set_queen_coordinates(int xy[2], int offsets[56][2]);
  *************************************/
 void set_king_coordinates(int xy[2], int offsets[56][2]);
 
-/******************************************************************************
- * auxillary function for the set pawn coordinates
- *
- * @params int xy[2], int offsets[56][2], int race
- * ***************************************************************************/
-void set_pawn_diagonal_coord(int xy[2], int offsets[56][2], int race);
 /*************************************
  * gives you pawn moves at position xy[2]
  *
