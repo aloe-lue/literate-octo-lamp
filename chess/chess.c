@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "chess.h"
+#include "queue_linked_list.h"
 
 int get_rank_row(const int RANK)
 {
@@ -130,6 +131,7 @@ void set_bishop_coordinates(int xy[2], int offsets[56][2])
 			offsets[i][0] = 8;
 			offsets[i][1] = 8;
 		}
+
 		switch(j) {
 		case 0:
 			bishop[j][0]++;
@@ -161,7 +163,7 @@ void set_queen_coordinates(int xy[2], int offsets[56][2])
 		{ 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 }
 	};
 	int j = 0;
-	for (int i = 28; i < 56; i++) {
+	for (int i = 0; i < 56; i++) {
 		int x = queen[j][0];
 		int y = queen[j][1];
 
@@ -257,11 +259,11 @@ void set_pawn_coordinates(int xy[2], int offsets[56][2], int race)
 			y = WHITE_PAWN[i][1];
 			break;
 		}
+
 		int ax = xy[0] + x;
 		int ay = xy[1] + y;
-		int bound = xy_is_between_inc(ax, ay);
 
-		if (bound) {
+		if (xy_is_between_inc(ax, ay)) {
 			offsets[i][0] = ax;
 			offsets[i][1] = ay;
 		} else {
@@ -333,7 +335,7 @@ void init_king(chess_piece **pieces)
 		int k_loc = king_placements[i];
 		pieces[k_loc]->piece = 5;
 		pieces[k_loc]->symbol = 'k';
-		pieces[k_loc]->contain_piece = 1; // i'm going to zero you okay? 
+		pieces[k_loc]->contain_piece = 1;
 		
 		switch(k_loc) {
 		case 4:
@@ -544,23 +546,23 @@ void set_coordinates_to_piece(int piece,
 		chess_piece **pieces)
 {
         switch(piece) {
-        case 5: 
-                set_king_coordinates(xy, coordinates);
-                break;
-        case 4:
-                set_queen_coordinates(xy, coordinates);
-                break;
-        case 3:
-                set_bishop_coordinates(xy, coordinates);
-                break;
-        case 2:
-                set_knight_coordinates(xy, coordinates);
+        case 0:
+                set_pawn_coordinates(xy, coordinates, race_turn);
                 break;
         case 1:
                 set_rook_coordinates(xy, coordinates);
                 break;
-        case 0:
-                set_pawn_coordinates(xy, coordinates, race_turn);
+        case 2:
+                set_knight_coordinates(xy, coordinates);
+                break;
+        case 3:
+                set_bishop_coordinates(xy, coordinates);
+                break;
+        case 4:
+                set_queen_coordinates(xy, coordinates);
+                break;
+        case 5: 
+                set_king_coordinates(xy, coordinates);
                 break;
         default:
                 break;
@@ -582,13 +584,13 @@ void set_chess_piece_dest(int idx_dest, int idx_src, chess_piece **pieces)
 
 void set_left_square(int idx_src, chess_piece **pieces)
 {
-        pieces[idx_src]->race = -1;
-        pieces[idx_src]->piece = -1;
-        pieces[idx_src]->contain_piece = 0;
-        pieces[idx_src]->symbol = '\0';
-        strncpy(pieces[idx_src]->ascii_symbol,
+	pieces[idx_src]->race = -1;
+	pieces[idx_src]->piece = -1;
+	pieces[idx_src]->contain_piece = 0;
+	pieces[idx_src]->symbol = '\0';
+	strncpy(pieces[idx_src]->ascii_symbol,
 			pieces[idx_src]->clr == 1 ? " ■ " : " □ ",
-                       	5);
+			5);
 }
 
 int is_king_move_valid(int index_src,
@@ -644,8 +646,8 @@ int is_queen_move_valid(int index_src,
 		int coordinate[2] = { x, y };
 		int index = get_index_by_coordinate(coordinate);
 		int is_ally = (pieces[index]->piece >= 0 &&
-			pieces[index]->piece <= 5) &&
-			pieces[index_src]->race == pieces[index]->race;
+				pieces[index]->piece <= 5) &&
+				pieces[index_src]->race == pieces[index]->race;
 
 		if (is_ally)
 			return 0;
@@ -799,14 +801,14 @@ int is_rook_move_valid(int index_src,
 	if (is_our_king) { // order castling, DOOO ITTT!!! as long as
 		if (index_dest > index_src)
 			return to_right_castling(index_src,
-					index_dest,
-					coordinates,
-					pieces);
+				index_dest,
+				coordinates,
+				pieces);
 		else if (index_dest < index_src)
 			return to_left_castling(index_src,
-					index_dest,
-					coordinates,
-					pieces);
+				index_dest,
+				coordinates,
+				pieces);
 		return 0;
 	}
 	int begin_track = 0;
@@ -830,28 +832,88 @@ int is_rook_move_valid(int index_src,
 		int index = get_index_by_coordinate(coordinate);
 
 		if (pieces[index]->piece >= 0 && pieces[index]->piece <= 5 && 
-				pieces[index]->race == pieces[index_src]->race)
+			pieces[index]->race == pieces[index_src]->race)
 			return 0;
 	}
 	return 1;
 }
 
-/******************************************************************************
- * invalidate en passant is to invalidate the en passant for moving other piece
- * other than the priority piece.  for now this is the solution i can think of
- * since there should be other solution that are far better. or exceptional
+/***************************************
+ * invalidate en passant is to invalidate
+ * the en passant for moving other piece
+ * other than the priority piece.  for
+ * now this is the solution i can think of
+ * since there should be other solution
+ * that are far better. or exceptional
  * hmmmm simpleton that I am.
  *
- * use linked list queue to check within the en passant bound everytime there
+ * use linked list queue to check within
+ * the en passant bound everytime there
  * is move validation.
- * ***************************************************************************/
-static int invalidate_en_passant = 0; 
+ * ************************************/
+static int invalid_en_passant = 0;
+static int en_passant_white = 0;
+static int en_passant_black = 0;
+
+/**************************************
+ * this two functions together with above
+ * declaration helps with invalidating
+ * en passant i guess i should just use
+ * global variables this is bad idea ain't
+ * it?
+ * ***********************************/
+void white_en_passant(chess_piece **pieces, int index_src, int src_race)
+{
+	if (src_race == 1 && index_src >= 24 && index_src < 32) {
+		if (index_src == 24 && pieces[index_src]->race !=
+				pieces[index_src+1]->race &&
+				pieces[index_src+1]->contain_piece)
+		       en_passant_white++;
+		else if (index_src == 31 && pieces[index_src]->race !=
+				pieces[index_src-1]->race &&
+				pieces[index_src-1]->contain_piece)
+			en_passant_white++;
+		else if (index_src > 24 && index_src < 31 &&
+				(pieces[index_src]->race !=
+				pieces[index_src-1]->race ||
+				pieces[index_src]->race !=
+				pieces[index_src+1]->race) &&
+				(pieces[index_src-1]->contain_piece ||
+				pieces[index_src+1]->contain_piece))
+			en_passant_white++;
+	}
+}
+
+void black_en_passant(chess_piece **pieces, int index_src, int src_race)
+{
+	if (src_race == 0 && index_src >= 32 && index_src < 40) {
+		if (index_src == 32 && pieces[index_src]->race !=
+				pieces[index_src+1]->race &&
+				pieces[index_src+1]->contain_piece)
+		       en_passant_black++;
+		else if (index_src == 39 && pieces[index_src]->race !=
+				pieces[index_src-1]->race &&
+				pieces[index_src-1]->contain_piece)
+			en_passant_black++;
+		else if (index_src > 32 && index_src < 40 &&
+				(pieces[index_src]->race !=
+				pieces[index_src-1]->race ||
+				pieces[index_src]->race !=
+				pieces[index_src+1]->race) &&
+				(pieces[index_src-1]->contain_piece ||
+				pieces[index_src+1]->contain_piece))
+			en_passant_black++;
+	}
+}
+
 int is_pawn_move_valid(int index_src,
 		int index_dest,
 		int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int is_valid = 0;
+	int loc = 0;
+
 	for (int i = 0; i < 4; i++) {
 		int ax = coordinates[i][0];
 		int ay = coordinates[i][1];
@@ -861,52 +923,72 @@ int is_pawn_move_valid(int index_src,
 		if (index == index_dest)
 			is_valid = 1;
 
-		int is_en_passant_bound = ((pieces[index_src]->race == 0 &&
-						index_src >= 24 &&
-						index_src < 32) || 
-					(pieces[index]->race == 1 &&
-						index_src >= 32 &&
-						index_src < 40));
-		// en passant->left 
-		if (i == 2 && is_en_passant_bound &&
-				is_valid &&
-				pieces[index_src-1]->contain_piece &&
-				!pieces[index_dest]->contain_piece &&
-				pieces[index_src]->race !=
-				pieces[index_dest]->race &&
-				!invalidate_en_passant) {
-			// en passing left piece
-			set_left_square(index_src-1, pieces);
-			return 1;
+		if (i <= 1 && is_valid) {
+			loc = i;
+			break;
 		}
-		// en passant->right 
-		if (i == 3 && is_en_passant_bound &&
-				is_valid &&
-				pieces[index_src+1]->contain_piece &&
-				!pieces[index_dest]->contain_piece &&
-				pieces[index_src]->race !=
-				pieces[index_dest]->race &&
-				!invalidate_en_passant) {
-			// en passing right piece
-			set_left_square(index_src+1, pieces);
-			return 1;
-		}
-		// you want to devour, charrit! capture is the right term.
-		if (i >= 2 && pieces[index_src]->race !=
-				pieces[index_dest]->race &&
-				pieces[index_dest]->contain_piece != 0 &&
-				is_valid)
-			return 1;
-		// move not allowed
-		if (i >= 2 && pieces[index_dest]->contain_piece == 0 &&
-				is_valid)
-			return 0;
-	}
 
+		if (i >= 2 && is_valid) {
+			loc = i;
+			break;
+		}
+	}
 	if (!is_valid)
 		return 0;
+	int src_race = pieces[index_src]->race;
 
-	return 1;
+
+	// move one forward
+	if (is_valid && loc == 0 && !pieces[index_dest]->contain_piece) {
+		int wpawn_promotion = src_race == 1 ?
+			(index_src >= 0 && index_src <= 7) : 0;
+
+		int bpawn_promotion = src_race == 0 ?
+			(index_src >= 56 && index_src <= 63) : 0;
+
+		if (wpawn_promotion || bpawn_promotion)
+			return 5;
+
+		black_en_passant(pieces, index_src, src_race);
+		white_en_passant(pieces, index_src, src_race);
+		return 1;
+	}
+
+	// devour diagonally
+	if (is_valid && pieces[index_dest]->contain_piece &&
+			src_race != pieces[index_dest]->race)
+		return 1;
+
+	// en passant left 
+	if (is_valid && loc == 2 && !pieces[index_dest]->contain_piece &&
+			!invalid_en_passant && src_race == 1 ?
+			index_src >= 24 && index_src <= 31 :
+			index_src >= 32 && index_src <= 39 &&
+			src_race != pieces[index_src-1]->race) {
+		set_left_square(index_src-1, pieces);
+		return 1;
+	}
+
+	// en passant right
+	if (is_valid && loc == 3 && !pieces[index_dest]->contain_piece &&
+			!invalid_en_passant && src_race == 1 ?
+			index_src >= 24 && index_src <= 31 : index_src >= 32 &&
+			index_src <= 39 && src_race !=
+			pieces[index_src+1]->race) {
+		set_left_square(index_src+1, pieces);
+		return 1;
+	}
+
+	// move twice block
+	// potential error: ArrayIndexOutOfBoundExceptionError
+	// nope i don't program in java or c# it just pretty good to read
+	if (is_valid && loc == 1 && src_race == 1 ? index_src >= 48 &&
+			index_src <= 55 : index_src >= 7 && index_src <= 15 &&
+			src_race == 1 ? !pieces[index_dest-8]->contain_piece :
+			!pieces[index_dest+8]->contain_piece)
+		return 1;
+
+	return 0;
 }
 
 int is_chess_piece_move_valid(int dest[2],
@@ -917,59 +999,49 @@ int is_chess_piece_move_valid(int dest[2],
 		chess_piece **pieces)
 {
 	switch(piece) {
-	case 5:
-		return is_king_move_valid(index_src,
-				index_dest,
-				coordinates,
-				pieces);
-	case 4:
-		return is_queen_move_valid(index_src,
-				index_dest,
-				coordinates,
-				pieces);
-	case 3:
-		return is_bishop_move_valid(index_src,
-				index_dest,
-				coordinates,
-				pieces);
-	case 2:
-		return is_knight_move_valid(index_src,
-				index_dest,
-				coordinates,
+	case 0:
+		return is_pawn_move_valid(index_src, index_dest, coordinates,
 				pieces);
 	case 1:
-		return is_rook_move_valid(index_src,
-				index_dest,
-				coordinates,
+		return is_rook_move_valid(index_src, index_dest, coordinates,
 				pieces);
-	case 0:
-		return is_pawn_move_valid(index_src,
-				index_dest,
-				coordinates,
+	case 2:
+		return is_knight_move_valid(index_src, index_dest, coordinates,
 				pieces);
-	default: return 0;
+	case 3:
+		return is_bishop_move_valid(index_src, index_dest, coordinates,
+				pieces);
+	case 4:
+		return is_queen_move_valid(index_src, index_dest, coordinates,
+				pieces);
+	case 5:
+		return is_king_move_valid(index_src, index_dest, coordinates,
+				pieces);
+	default:
+		return 0;
 	}
 }
 
 int get_chess_piece(int i)
 {
 	switch(i) {
-	case 107: // king->k 
-		return 5;
-	case 113: // queen->q
-		return 4;
 	case 98: // bishop->b
 		return 3;
-	case 110: // knight->n
-		return 2;
-	case 114: // rook->r
-		return 1;
 	case 101: // pawn->e
 		return 0;
+	case 107: // king->k 
+		return 5;
+	case 110: // knight->n
+		return 2;
+	case 113: // queen->q
+		return 4;
+	case 114: // rook->r
+		return 1;
 	default:
-	        return 99999;
+	        return 6;
 	}
 }
+
 /******************************************************************************
  * 5 invalid piece
  * 4 invalid destination or source
@@ -982,8 +1054,8 @@ int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces)
 {
 	// break notation by piece source and destination
 	int piece = get_chess_piece((int)notation[0]);
-	if (piece == 99999)
-		return 5; // 
+	if (piece == 6)
+		return 5;
 
         int i_src = 0;
         int i_dest = 0;
@@ -1017,15 +1089,10 @@ int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces)
         set_coordinate_by_index(idx_src, src_xy);
         set_coordinate_by_index(idx_dest, dest_xy);
         set_coordinates_to_piece(piece, src_xy, coordinates, pieces);
-	
 
 	// check if move is valid this will check if 
-        int is_move_valid = is_chess_piece_move_valid(dest_xy,
-				idx_src,
-				idx_dest,
-				piece,
-				coordinates,
-				pieces); // 0 || 1
+        int is_move_valid = is_chess_piece_move_valid(dest_xy, idx_src,
+			idx_dest, piece, coordinates, pieces);
 	
         if (is_move_valid)
                 race_turn = race_turn == 1 ? 0 : 1;

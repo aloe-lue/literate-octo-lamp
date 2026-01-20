@@ -257,6 +257,15 @@ int is_knight_move_valid(int index_src,
 		int coordinates[56][2],
 		chess_piece **pieces);
 
+/**************************************
+ * auxillary functions that adds en_passant
+ *
+ * @params chess_piece **pieces, int index_src, int src_race
+ * returns nothing
+ * ***********************************/
+void white_en_passant(chess_piece **pieces, int index_src, int src_race);
+void black_en_passant(chess_piece **pieces, int index_src, int src_race);
+
 /******************************************************************************
  * this checks if such move is legal or not
  *
