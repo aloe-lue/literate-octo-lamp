@@ -13,3 +13,8 @@ i have to somehow separate them so i can test the validation function that i
 have created called set piece to dest by char so yeah it is the piece for
 validating piece moves.
 
+todo: create a function that set the en passant status on the piece specifically
+only the piece=0 or pawn on special move ohhhh that's what you call it. other's
+don't have it boooo other pieces duhh anyway... the downside is that you have to
+disable it when you want to, that is when it's your turn and you didn't en
+passant enemy oh we have a problem here turn it off. this i'm stuck.
