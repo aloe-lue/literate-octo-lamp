@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "chess.h"
 #include "queue_linked_list.h"
 
-int get_rank_row(const int RANK)
+int get_rank_row(int RANK)
 {
 	int row = 0;
 	for (int i = 56; i != 49; i--) {
@@ -17,7 +18,7 @@ int get_rank_row(const int RANK)
 	return row;
 }
 
-int get_file_column(const int FILEC)
+int get_file_column(int FILEC)
 {
 	int column = 0;
 	for (int i = 97; i <= 104; i++) {
@@ -29,7 +30,7 @@ int get_file_column(const int FILEC)
 	return column;
 }
 
-int find_chess_idx(const int RANK, const int FILECC)
+int find_chess_idx(int RANK, int FILECC)
 {
         int column = get_file_column(FILECC);
 	int row = get_rank_row(RANK);
@@ -38,8 +39,8 @@ int find_chess_idx(const int RANK, const int FILECC)
 
 int get_index_by_chess_position(char chess_position[3])
 {
-        const int RANK = (int)chess_position[0];
-        const int FILECC = (int)chess_position[1];
+        int RANK = (int)chess_position[0];
+        int FILECC = (int)chess_position[1];
         if ((RANK < 49 && RANK > 56) || (FILECC < 97 && FILECC > 104))
 		return 64;
         int index = find_chess_idx(RANK, FILECC);
@@ -92,7 +93,7 @@ void set_rook_coordinates(int xy[2], int offsets[56][2])
 
 void set_knight_coordinates(int xy[2], int offsets[56][2])
 {
-	const int KNIGHT[8][2] = {
+	int KNIGHT[8][2] = {
 		{ 1, 2 }, { 2, 1 }, { -1, 2 }, { -2, 1 }, { 1, -2 }, { 2, -1 },
 		{ -1, -2 }, { -2, -1 }
 	};
@@ -216,7 +217,7 @@ void set_queen_coordinates(int xy[2], int offsets[56][2])
 
 void set_king_coordinates(int xy[2], int offsets[56][2])
 {
-	const int KING[8][2] = {
+	int KING[8][2] = {
 		{ 1, 1 }, { -1, 1 }, { 1, -1 }, { -1, -1 }, { 0, 1 }, { 1, 0 },
 		{ 0, -1 }, { -1, 0 }
 	};
@@ -239,10 +240,10 @@ void set_king_coordinates(int xy[2], int offsets[56][2])
 
 void set_pawn_coordinates(int xy[2], int offsets[56][2], int race)
 {
-	const int WHITE_PAWN[4][2] = {
+	int WHITE_PAWN[4][2] = {
 		{ 0, -1 }, { 0, -2 }, { -1, -1 }, { 1, -1 } 
 	};
-	const int BLACK_PAWN[4][2] = {
+	int BLACK_PAWN[4][2] = {
 		{ 0, 1 }, { 0, 2 }, { -1, 1 }, { 1, 1 }
 	};
 	for (int i = 0; i < 4; i++) {
@@ -482,6 +483,7 @@ chess_piece **init_chess_pieces()
        		pieces[i]->race = -1;
         	pieces[i]->piece = -1;
         	pieces[i]->contain_piece = 0;
+        	pieces[i]->special_move = 0;
 
         	if (bit == 0 && (pieces[i]->piece = -1))
         	        strcpy(pieces[i]->ascii_symbol, " □ ");
@@ -514,13 +516,13 @@ void free_chess_pieces(chess_piece **pieces)
 
 void draw_chess_pieces(chess_piece **pieces) 
 {
-        const char *FILES = " *  a  b  c  d  e  f  g  h  *\n";
+        char *FILES = " *  a  b  c  d  e  f  g  h  *\n";
         char rank = 8;
 	char squares[500] = "\0";
 
         strcat(squares, FILES);
         for (int i = 0; i < 64; i++) {
-                const char *rank_format = " %d  ";
+                char *rank_format = " %d  ";
                 int buffer_size_rank = snprintf(NULL, 0, rank_format, rank);
                 char rank_char[buffer_size_rank+1];
                 snprintf(rank_char, buffer_size_rank, rank_format, rank);
@@ -540,9 +542,7 @@ void draw_chess_pieces(chess_piece **pieces)
 }
 
 static int race_turn = 1; // white first
-void set_coordinates_to_piece(int piece,
-		int xy[2],
-		int coordinates[56][2],
+void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2],
 		chess_piece **pieces)
 {
         switch(piece) {
@@ -593,9 +593,7 @@ void set_left_square(int idx_src, chess_piece **pieces)
 			5);
 }
 
-int is_king_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int is_valid = 0;
@@ -621,9 +619,7 @@ int is_king_move_valid(int index_src,
 	return 1;
 }
 
-int is_queen_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int begin_track = 0;
@@ -655,9 +651,7 @@ int is_queen_move_valid(int index_src,
 	return 1;
 }
 
-int is_bishop_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int begin_track = 0;
@@ -687,9 +681,7 @@ int is_bishop_move_valid(int index_src,
 	return 1;
 }
 
-int is_knight_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int is_valid = 0;
@@ -713,9 +705,7 @@ int is_knight_move_valid(int index_src,
 	return 1;
 }
 
-int to_right_castling(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int to_right_castling(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int indexes[7] = {-1};
@@ -751,9 +741,7 @@ int to_right_castling(int index_src,
 	return is_no_block;
 }
 
-int to_left_castling(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int to_left_castling(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int indexes[7] = {-1};
@@ -788,9 +776,7 @@ int to_left_castling(int index_src,
 	return is_no_block;
 }
 
-int is_rook_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int is_our_king = pieces[index_src]->race == pieces[index_dest]->race &&
@@ -838,77 +824,8 @@ int is_rook_move_valid(int index_src,
 	return 1;
 }
 
-/***************************************
- * invalidate en passant is to invalidate
- * the en passant for moving other piece
- * other than the priority piece.  for
- * now this is the solution i can think of
- * since there should be other solution
- * that are far better. or exceptional
- * hmmmm simpleton that I am.
- *
- * use linked list queue to check within
- * the en passant bound everytime there
- * is move validation.
- * ************************************/
-static int invalid_en_passant = 0;
-static int en_passant_white = 0;
-static int en_passant_black = 0;
 
-/**************************************
- * this two functions together with above
- * declaration helps with invalidating
- * en passant i guess i should just use
- * global variables this is bad idea ain't
- * it?
- * ***********************************/
-void white_en_passant(chess_piece **pieces, int index_src, int src_race)
-{
-	if (src_race == 1 && index_src >= 24 && index_src < 32) {
-		if (index_src == 24 && pieces[index_src]->race !=
-				pieces[index_src+1]->race &&
-				pieces[index_src+1]->contain_piece)
-		       en_passant_white++;
-		else if (index_src == 31 && pieces[index_src]->race !=
-				pieces[index_src-1]->race &&
-				pieces[index_src-1]->contain_piece)
-			en_passant_white++;
-		else if (index_src > 24 && index_src < 31 &&
-				(pieces[index_src]->race !=
-				pieces[index_src-1]->race ||
-				pieces[index_src]->race !=
-				pieces[index_src+1]->race) &&
-				(pieces[index_src-1]->contain_piece ||
-				pieces[index_src+1]->contain_piece))
-			en_passant_white++;
-	}
-}
-
-void black_en_passant(chess_piece **pieces, int index_src, int src_race)
-{
-	if (src_race == 0 && index_src >= 32 && index_src < 40) {
-		if (index_src == 32 && pieces[index_src]->race !=
-				pieces[index_src+1]->race &&
-				pieces[index_src+1]->contain_piece)
-		       en_passant_black++;
-		else if (index_src == 39 && pieces[index_src]->race !=
-				pieces[index_src-1]->race &&
-				pieces[index_src-1]->contain_piece)
-			en_passant_black++;
-		else if (index_src > 32 && index_src < 40 &&
-				(pieces[index_src]->race !=
-				pieces[index_src-1]->race ||
-				pieces[index_src]->race !=
-				pieces[index_src+1]->race) &&
-				(pieces[index_src-1]->contain_piece ||
-				pieces[index_src+1]->contain_piece))
-			en_passant_black++;
-	}
-}
-
-int is_pawn_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces)
 {
 	int is_valid = 0;
@@ -949,8 +866,6 @@ int is_pawn_move_valid(int index_src,
 		if (wpawn_promotion || bpawn_promotion)
 			return 5;
 
-		black_en_passant(pieces, index_src, src_race);
-		white_en_passant(pieces, index_src, src_race);
 		return 1;
 	}
 
@@ -959,22 +874,22 @@ int is_pawn_move_valid(int index_src,
 			src_race != pieces[index_dest]->race)
 		return 1;
 
-	// en passant left 
+	// en passant left 108 is 'l'
 	if (is_valid && loc == 2 && !pieces[index_dest]->contain_piece &&
-			!invalid_en_passant && src_race == 1 ?
-			index_src >= 24 && index_src <= 31 :
+			(int)pieces[index_src]->special_move == 108 &&
+			src_race == 1 ?  index_src >= 24 && index_src <= 31 :
 			index_src >= 32 && index_src <= 39 &&
 			src_race != pieces[index_src-1]->race) {
 		set_left_square(index_src-1, pieces);
 		return 1;
 	}
 
-	// en passant right
+	// en passant right 114 is 'r'
 	if (is_valid && loc == 3 && !pieces[index_dest]->contain_piece &&
-			!invalid_en_passant && src_race == 1 ?
-			index_src >= 24 && index_src <= 31 : index_src >= 32 &&
-			index_src <= 39 && src_race !=
-			pieces[index_src+1]->race) {
+			(int)pieces[index_src]->special_move == 114 &&
+			src_race == 1 ? index_src >= 24 && index_src <= 31 :
+			index_src >= 32 && index_src <= 39 &&
+			src_race != pieces[index_src+1]->race) {
 		set_left_square(index_src+1, pieces);
 		return 1;
 	}
@@ -991,12 +906,103 @@ int is_pawn_move_valid(int index_src,
 	return 0;
 }
 
-int is_chess_piece_move_valid(int dest[2],
-                int index_src,
-		int index_dest,
-		int piece,
-                int coordinates[56][2],
-		chess_piece **pieces)
+void set_right_en_passant(chess_piece **pieces, int right_src, int index_src,
+		int left_edge, int en_passant_ranks)
+{
+	if (left_edge && en_passant_ranks &&
+			pieces[index_src]->piece == 0 &&
+			pieces[right_src]->contain_piece &&
+			pieces[index_src]->race != 
+			pieces[right_src]->race) {
+		pieces[index_src]->special_move = 2;
+		return;
+	}
+}
+
+void set_left_en_passant(chess_piece **pieces, int left_src, int index_src,
+		int right_edge, int en_passant_ranks)
+{
+	if (right_edge && en_passant_ranks &&
+			pieces[index_src]->piece == 0 &&
+			pieces[left_src]->contain_piece &&
+			pieces[index_src]->race != 
+			pieces[left_src]->race) {
+		pieces[index_src]->special_move = 1;
+		return;
+	}
+}
+
+void set_left_or_right_en_passant(chess_piece **pieces, int left_edge,
+		int right_edge, int index_src, int right_src,
+		int left_src, int en_passant_ranks)
+{
+	if (!left_edge && !right_edge && en_passant_ranks &&
+			pieces[index_src]->piece == 0) {
+		if (pieces[left_src]->contain_piece &&
+				pieces[index_src]->race !=
+				pieces[left_src]->race) {
+			pieces[index_src]->special_move = 1;
+			return;
+		}
+
+		if (pieces[right_src]->contain_piece &&
+				pieces[index_src]->race != 
+				pieces[right_src]->race)
+			pieces[index_src]->special_move = 2;
+	}
+}
+
+void set_left_and_right_en_passant(chess_piece **pieces, int left_edge,
+		int right_edge, int index_src, int right_src,
+		int left_src, int en_passant_ranks)
+{
+	if (!left_edge && !right_edge && en_passant_ranks &&
+			pieces[index_src]->piece == 0) {
+		if ((pieces[left_src]->contain_piece &&
+					pieces[index_src]->race !=
+					pieces[left_src]->race) &&
+				(pieces[right_src]->contain_piece &&
+				 pieces[index_src]->race !=
+				 pieces[right_src]->race))
+			pieces[index_src]->special_move = 3;
+	}
+}
+
+// this is ugly right? hmm :( there should be a better way to do this.
+void set_en_passant(chess_piece **pieces, int index_src)
+{
+	int left_src = index_src-1;
+	int right_src = index_src+1;
+	int left_edge = index_src % 8 == 0;
+	int right_edge = (index_src+1) % 8 == 0;
+
+	int en_passant_ranks = pieces[index_src]->race == 1 ?
+	       	index_src >= 24 && index_src < 32 :
+	       	index_src >= 32 && index_src < 40;
+
+	// add special move "en passant" to edge pawn to en passant right
+	set_right_en_passant(pieces, right_src, index_src, left_edge,
+			en_passant_ranks);
+
+	// add special move "en passant" to edge pawn to en passant left
+	set_left_en_passant(pieces, left_src, index_src, right_edge,
+			en_passant_ranks);
+	
+	// add special move "en passant" to pawn to en passant
+	set_left_or_right_en_passant(pieces, left_edge, right_edge, index_src,
+			right_src, left_src, en_passant_ranks);
+
+	// add special move "en passant" either left or right 
+	set_left_and_right_en_passant(pieces, left_edge, right_edge, index_src,
+			right_src, left_src, en_passant_ranks);
+
+	// if neither up was the case return to special move to zero
+	if (en_passant_ranks && pieces[index_src]->piece == 0)
+		pieces[index_src]->special_move = 0;
+}
+
+int is_chess_piece_move_valid(int dest[2], int index_src, int index_dest,
+		int piece, int coordinates[56][2], chess_piece **pieces)
 {
 	switch(piece) {
 	case 0:
@@ -1043,12 +1049,15 @@ int get_chess_piece(int i)
 }
 
 /******************************************************************************
+ * 6 pawn_promotion
  * 5 invalid piece
  * 4 invalid destination or source
  * 3 attempt to change enemy pieces
  * 2 piece isn't there
  * 1 invalid move
  * 0 success move
+ * 
+ * you could probably use hash to use the ambiguous terms like n6e
  * ***************************************************************************/
 int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces) 
 {
@@ -1071,6 +1080,8 @@ int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces)
         int idx_dest = get_index_by_chess_position(dest);
         if (idx_dest == 64 || idx_src == 64)
                 return 4; // over the bound error
+
+	set_en_passant(pieces, idx_src);
 
 	if (pieces[idx_src]->race != race_turn)
 		return 3; // don't allow user moving your piece
@@ -1098,6 +1109,12 @@ int set_chess_piece_to_by_char(char notation[6], chess_piece **pieces)
                 race_turn = race_turn == 1 ? 0 : 1;
 	else
                 return 1;
+
+	if (is_move_valid == 5) {
+		set_chess_piece_dest(idx_dest, idx_src, pieces);
+		set_left_square(idx_src, pieces);
+		return 5;
+	}
 
 	// move the chess piece
 	set_chess_piece_dest(idx_dest, idx_src, pieces);

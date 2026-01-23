@@ -27,7 +27,8 @@
  * and white then chess character unicode
  * 
  * *************************************/
-typedef struct chess_piece {
+typedef struct chess_piece 
+{
 	int coordinate[2];
 	int square[2];
 	int race;
@@ -36,6 +37,7 @@ typedef struct chess_piece {
         char symbol;
         char ascii_symbol[6];
         int clr;
+	int special_move;
 } chess_piece;
 
 /******************************************************************************
@@ -184,9 +186,7 @@ void draw_chess_pieces(chess_piece **pieces);
  *
  * @params int piece, int xy[2], int coordinates[56][2]
  * *************************************/
-void set_coordinates_to_piece(int piece,
-		int xy[2],
-		int coordinates[56][2],
+void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2],
 		chess_piece **pieces);
 
 /******************************************************************************
@@ -195,9 +195,7 @@ void set_coordinates_to_piece(int piece,
  * @params int index_src, int index_dest, int coordinates[56][2]
  * return int
  * ***************************************************************************/
-int is_king_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 /*****************************************
  * this checks if such moves of queen is valid or not
@@ -205,9 +203,7 @@ int is_king_move_valid(int index_src,
  * @params int index_src, int index_dest, int coordinates[56][2]
  * return int
  * *************************************/
-int is_queen_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
 /*****************************************
@@ -217,9 +213,7 @@ int is_queen_move_valid(int index_src,
  * @params int index_src, int index_dest, int coordinates[56][2]
  * @returns int
  * *************************************/
-int is_bishop_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
 /*****************************************
@@ -227,13 +221,9 @@ int is_bishop_move_valid(int index_src,
  *
  * @params int index_src, int index_dest, int coordinates[56][2]
  * *************************************/
-int to_left_castling(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int to_left_castling(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
-int to_right_castling(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int to_right_castling(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
 /*****************************************
@@ -241,9 +231,7 @@ int to_right_castling(int index_src,
  *
  * @params int index_src, int index_dest, int coordinates[56][2]
  * *************************************/
-int is_rook_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_rook_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
 /*****************************************
@@ -252,19 +240,60 @@ int is_rook_move_valid(int index_src,
  * @params int index_src, int index_dest, int coordinates[56][2]
  * returns int
  * *************************************/
-int is_knight_move_valid(int index_src,
-		int index_dest,
-		int coordinates[56][2],
+int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
+
+/**************************************
+ * en passant right chess piece
+ *
+ * @params chess_piece **pieces, int right_src,
+ * 	int index_src, int left_edge, int en_passant_ranks
+ * returns void
+ * ***********************************/
+void set_right_en_passant(chess_piece **pieces, int right_src, int index_src,
+		int left_edge, int en_passant_ranks);
+
+/**************************************
+ * en passant left chess piece 
+ *
+ * @params chess_piece **pieces, int left_src,
+ * 	int index_src, int right_edge, int en_passant_ranks
+ * returns void
+ * ***********************************/
+void set_left_en_passant(chess_piece **pieces, int left_src, int index_src,
+		int right_edge, int en_passant_ranks);
+
+/**************************************
+ * en passant either left or right chess piece
+ *
+ * @params chess_piece **pieces, int left_edge,
+ * 	int right_edge, int index_src, int right_src,
+ * 	int left_src, int en_passant_rank
+ * ***********************************/
+void set_left_or_right_en_passant(chess_piece **pieces, int left_edge,
+		int right_edge, int index_src, int right_src, int left_src,
+		int en_passant_ranks);
+
+/**************************************
+ * pawn's left and right is a enemy race
+ * and within the rank of the enemy
+ *
+ * @params chess_piece **pieces, int left_edge,
+ * 	int right_edge, int index_src, int right_src,
+ * 	int left_src, int en_passant_rank
+ * returns void
+ * ***********************************/
+void set_left_and_right_en_passant(chess_piece **pieces, int left_edge,
+		int right_edge, int index_src, int right_src, int left_src,
+		int en_passant_ranks);
 /**************************************
  * auxillary functions that adds en_passant
  *
  * @params chess_piece **pieces, int index_src, int src_race
  * returns nothing
  * ***********************************/
-void white_en_passant(chess_piece **pieces, int index_src, int src_race);
-void black_en_passant(chess_piece **pieces, int index_src, int src_race);
+void en_passant(chess_piece **pieces, int index_src);
 
 /******************************************************************************
  * this checks if such move is legal or not
@@ -280,12 +309,8 @@ int is_pawn_move_valid(int index_src, int index_dest, int coordinates[56][2],
  *
  * @params int dest[2], int coordinates[56][2]
  * *************************************/
-int is_chess_piece_move_valid(int dest[2],
-                int index_src,
-                int index_dest,
-		int piece,
-                int coordinates[56][2],
-		chess_piece **pieces);
+int is_chess_piece_move_valid(int dest[2], int index_src, int index_dest,
+		int piece, int coordinates[56][2], chess_piece **pieces);
 
 
 /*****************************************
