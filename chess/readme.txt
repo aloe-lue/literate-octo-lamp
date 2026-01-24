@@ -17,4 +17,10 @@ todo: create a function that set the en passant status on the piece specifically
 only the piece=0 or pawn on special move ohhhh that's what you call it. other's
 don't have it boooo other pieces duhh anyway... the downside is that you have to
 disable it when you want to, that is when it's your turn and you didn't en
-passant enemy oh we have a problem here turn it off. this i'm stuck.
+passant enemy oh we have a problem here turn it off. this i'm stuck. 
+
+set en passant should run for both the pieces not when it's the enemy nor the
+player's turn. meaning you should loop everytime a turn is done. so you would
+change the pawn special move. woahh this turns out to be harder to do because
+the white or black moves diagonally now this is so weird this is so hard to
+implement. for now I want to clear my mind so I organized the code

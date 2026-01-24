@@ -189,6 +189,13 @@ void draw_chess_pieces(chess_piece **pieces);
 void set_coordinates_to_piece(int piece, int xy[2], int coordinates[56][2],
 		chess_piece **pieces);
 
+/**************************************
+ * is king move xy in coord? hmm
+ *
+ * @params coordinates[56][2], int index_dest
+ * @returns 1 or 0
+ * ***********************************/
+int is_king_move_is_in_coord(int coordinates[56][2], int index_dest);
 /******************************************************************************
  * this checks if such moves of king is valid or not
  *
@@ -203,6 +210,7 @@ int is_king_move_valid(int index_src, int index_dest, int coordinates[56][2],
  * @params int index_src, int index_dest, int coordinates[56][2]
  * return int
  * *************************************/
+int get_queen_end_track(int coordinates[56][2], int index_dest);
 int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
@@ -213,6 +221,7 @@ int is_queen_move_valid(int index_src, int index_dest, int coordinates[56][2],
  * @params int index_src, int index_dest, int coordinates[56][2]
  * @returns int
  * *************************************/
+int get_bishop_end_track(int coordinates[56][2], int index_dest);
 int is_bishop_move_valid(int index_src, int index_dest, int coordinates[56][2],
 		chess_piece **pieces);
 
@@ -251,7 +260,7 @@ int is_knight_move_valid(int index_src, int index_dest, int coordinates[56][2],
  * 	int index_src, int left_edge, int en_passant_ranks
  * returns void
  * ***********************************/
-void set_right_en_passant(chess_piece **pieces, int right_src, int index_src,
+int set_right_en_passant(chess_piece **pieces, int right_src, int index_src,
 		int left_edge, int en_passant_ranks);
 
 /**************************************
@@ -261,7 +270,7 @@ void set_right_en_passant(chess_piece **pieces, int right_src, int index_src,
  * 	int index_src, int right_edge, int en_passant_ranks
  * returns void
  * ***********************************/
-void set_left_en_passant(chess_piece **pieces, int left_src, int index_src,
+int set_left_en_passant(chess_piece **pieces, int left_src, int index_src,
 		int right_edge, int en_passant_ranks);
 
 /**************************************
@@ -271,7 +280,7 @@ void set_left_en_passant(chess_piece **pieces, int left_src, int index_src,
  * 	int right_edge, int index_src, int right_src,
  * 	int left_src, int en_passant_rank
  * ***********************************/
-void set_left_or_right_en_passant(chess_piece **pieces, int left_edge,
+int set_left_or_right_en_passant(chess_piece **pieces, int left_edge,
 		int right_edge, int index_src, int right_src, int left_src,
 		int en_passant_ranks);
 
@@ -284,7 +293,7 @@ void set_left_or_right_en_passant(chess_piece **pieces, int left_edge,
  * 	int left_src, int en_passant_rank
  * returns void
  * ***********************************/
-void set_left_and_right_en_passant(chess_piece **pieces, int left_edge,
+int set_left_and_right_en_passant(chess_piece **pieces, int left_edge,
 		int right_edge, int index_src, int right_src, int left_src,
 		int en_passant_ranks);
 /**************************************
@@ -294,6 +303,13 @@ void set_left_and_right_en_passant(chess_piece **pieces, int left_edge,
  * returns nothing
  * ***********************************/
 void en_passant(chess_piece **pieces, int index_src);
+
+/**************************************
+ * set pawns en passant is a helper function 
+ * that helps with assigning special move to
+ * pawn 
+ * ***********************************/
+void set_pawns_en_passant(chess_piece **pieces);
 
 /******************************************************************************
  * this checks if such move is legal or not
