@@ -1,17 +1,31 @@
 #ifndef CHESS_H
 #define CHESS_H
 
-#define WHITE	 			1
-#define BLACK	 		 	0
-#define ROOKUP	 			0
-#define ROOKBOTTOM 			1
-#define ROOKRIGHT 			2
-#define ROOKLEFT 			3
+#define WHITE	 		1
+#define BLACK	 	 	0
+#define ROOKUP	 		0
+#define ROOKBOTTOM 		1
+#define ROOKRIGHT 		2
+#define ROOKLEFT 		3
 
 #define BISHOPTOPRIGHT  	0
 #define BISHOPBOTTOMRIGHT	1
 #define BISHOPBOTTOMLEFT	2
 #define BISHOPTOPLEFT		3
+
+#define WKING  		"\u2654"
+#define WQUEEN  	"\u2655"
+#define WROOK  		"\u2656"
+#define WBISHOP  	"\u2657"
+#define WKNIGHT  	"\u2658"
+#define WPAWN  		"\u2659"
+
+#define BKING  		"\u265A"
+#define BQUEEN  	"\u265B"
+#define BROOK  		"\u265C"
+#define BBISHOP  	"\u265D"
+#define BKNIGHT  	"\u265E"
+#define BPAWN  		"\u265F"
 /*
  *  chess piece from 0 to 5 e, r, n, b, q, k
  *  piece color = black or white
@@ -30,6 +44,7 @@ typedef struct chess_square {
 	int coordinate[2];
 	int chess_piece_dests[56];
 	int special_move;
+	char piece_notation;
 	char square[3];
 	char piece_symbol[6];
 } chess_square;
@@ -86,8 +101,13 @@ void SetRookDests(chess_square *squares, int coord[2]);
 void SetKnightDests(chess_square *square, int coord[2]);
 
 /*
+ * set queen coords in idx
  */
-
 void SetQueenDests(chess_square *square, int coord[2]);
+
+/*
+ * init default pawns position
+ */
+void InitPawns(chess_square *squares);
 
 #endif // chess.h

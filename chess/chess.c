@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <string.h>
 
 #include "chess.h"
 
@@ -47,6 +48,7 @@ void SetPawnDests(chess_square *squares, int coord[2])
 {
 	const int WPAWN_OFFSETS[4][2] = {{0,-1}, {0,-2}, {-1,-1}, {1,-1}};
 	const int BPAWN_OFFSETS[4][2] = {{0,1}, {0,2}, {-1,1}, {1,1}};
+
 	int idx_src = GetIdxByCoord(coord);
 	int piece_color = squares[idx_src].piece_color;
 
@@ -173,7 +175,7 @@ void SetBishopDests(chess_square *squares, int coord[2])
 	}
 }
 
-void SetQueenDests(chess_square *square, int coord[2])
+void SetQueenDests(chess_square *squares, int coord[2])
 {
 	int queen_offsets[][2] = {{0,1}, {1,0}, {0,-1},{-1,0},
 		{1,1}, {1,-1}, {-1,-1}, {-1, 1}};
@@ -201,19 +203,19 @@ void SetQueenDests(chess_square *square, int coord[2])
 		case ROOKLEFT:
 			queen_offsets[j][0]--;
 			break;
-		case BISHOPTOPRIGHT+5:
+		case BISHOPTOPRIGHT+4:
 			queen_offsets[j][0]++;
 			queen_offsets[j][1]++;
 			break;
-		case BISHOPBOTTOMRIGHT+5:
+		case BISHOPBOTTOMRIGHT+4:
 			queen_offsets[j][0]++;
 			queen_offsets[j][1]--;
 			break;
-		case BISHOPBOTTOMLEFT+5:
+		case BISHOPBOTTOMLEFT+4:
 			queen_offsets[j][0]--;
 			queen_offsets[j][1]--;
 			break;
-		case BISHOPTOPLEFT+5:
+		case BISHOPTOPLEFT+4:
 			queen_offsets[j][0]--;
 			queen_offsets[j][1]++;
 			break;
@@ -223,6 +225,37 @@ void SetQueenDests(chess_square *square, int coord[2])
 			j++;
 	}
 }
+
+void InitPawns(chess_square *squares)
+{
+	for (int i = 8; i < 16; i++) {
+		int coord[] = {-1,-1};
+
+		SetCoordByIdx(coord, i);
+		SetPawnDests(squares, coord);
+		strcpy(squares[i].piece_symbol, BPAWN);
+
+		squares[i].piece_color = 0;
+		squares[i].chess_piece = 0;
+		squares[i].contain_piece = 1;
+		squares[i].piece_notation = 'e';
+	}
+
+	for (int i = 48; i < 56; i++) {
+		int coord[] = {-1, -1};
+
+		SetCoordByIdx(coord, i);
+		SetPawnDests(squares, coord);
+		strcpy(squares[i].piece_symbol, WPAWN);
+
+		squares[i].piece_color = 1;
+		squares[i].piece_notation = 'e';
+		squares[i].chess_piece = 0;
+		squares[i].contain_piece = 1;
+	}
+}
+
+
 
 
 chess_square *InitChessSquare()
