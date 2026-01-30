@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "doubly_linked_list.h"
 
-dlinked_list *InitDLinkedList()
+dlinked_list *init_dlinked_list()
 {
 	dlinked_list *list = malloc(sizeof(dlinked_list));
 
@@ -19,7 +20,7 @@ dlinked_list *InitDLinkedList()
 	return list;
 }
 
-dnode_list *InitDNodeList(chess_square square)
+dnode_list *init_dnode_list(char *data)
 {
 	dnode_list *dnl = malloc(sizeof(dnode_list));
 
@@ -27,63 +28,95 @@ dnode_list *InitDNodeList(chess_square square)
 		fprintf(stderr, "malloc err: InitDNodeList. ");
 		exit(EXIT_FAILURE);
 	}
-	
-	dnl->square = square;
+
+	strcpy(dnl->data, data);	
 	dnl->next = NULL;
 	dnl->prev = NULL;
 	
 	return dnl;
 }
 
-void EnqueueDNodeList(dlinked_list *dll, chess_square square)
+void enqueue_dnode_list(dlinked_list *dll, char *data)
 {
-	dnode_list *new_dnl = InitDNodeList(square);
+	dnode_list *new_dnl = init_dnode_list(data);
 	
 	if (dll->dlist_size == 0 || dll->head == NULL) {
 		dll->head = new_dnl;
 		dll->tail = new_dnl;
-		dll->prev_tail = new_dnl;
 		dll->dlist_size++;
 		return;
 	}
 
-	new_dnl->prev = dll->prev_tail;
-	dll->prev_tail->next = new_dnl;
-	dll->prev_tail = new_dnl;
+	dnode_list *tmp_tail = dll->tail;
 
+	new_dnl->prev = tmp_tail;
 	dll->tail->next = new_dnl;
 	dll->tail = new_dnl;
 	dll->dlist_size++;
 }
 
-void PrintFromTailDNodeList(dlinked_list *dll)
+
+void dequeue_dnode_list(dlinked_list *dll)
+{
+	if (dll->dlist_size == 0) {
+		fprintf(stderr, "cannot dequeue empty dnodelist. ");
+		return;
+	}
+	
+	dnode_list *tmp_head = dll->head;
+
+	dll->head = tmp_head->next;
+
+	if (dll->head == NULL)
+		dll->tail = NULL;
+	else
+		dll->head->prev = NULL;
+
+	dll->dlist_size--;
+
+	free(tmp_head);
+}
+
+void clear_dnode_lists(dlinked_list *dll)
+{
+	int dlist_size = dll->dlist_size;
+
+	for (int i = 0; i < dlist_size; i++)
+		dequeue_dnode_list(dll);
+}
+
+
+void print_from_tail_dnodelist(dlinked_list *dll)
 {
 	dnode_list *dnl = dll->tail;
 
 	while (dnl != NULL) {
 		// print what you want to debug here.
+		printf("(%s)<-", dnl->data);
 
 		dnl = dnl->prev;
 	}
 
-	printf("\n");
+	printf("nil\n");
 }
 
 
-void PrintFromHeadNodeList(dlinked_list *dll)
+void print_from_head_dnodelist(dlinked_list *dll)
 {
 	dnode_list *dnl = dll->head;
 
 	while (dnl != NULL) {
 		// print what you want to debug here.
+		printf("(%s)->", dnl->data);
 
 		dnl = dnl->next;
 	}
-	printf("\n");
+
+	printf("nil\n");
 }
 
 
-void PopDNodeList(dlinked_list *dll)
+void pop_dnode_list(dlinked_list *dll)
 {
 	dnode_list *tail = dll->tail;
 
@@ -91,38 +124,10 @@ void PopDNodeList(dlinked_list *dll)
 		fprintf(stderr, "cannot pop an empty dnodelist. ");
 		return;
 	}
-
-	dll->prev_tail = dll->tail->prev;
-	dll->tail = dll->prev_tail;
 	
+	dll->tail = tail->prev;
 	dll->dlist_size--;
+
 	free(tail);
-}
-
-void DequeueDNodeList(dlinked_list *dll)
-{
-	if (dll->dlist_size == 0) {
-		fprintf(stderr, "cannot dequeue empty dnodelist. ");
-		return;
-	}
-
-	dnode_list *tmp = dll->head;
-	dll->head = tmp->next;
-
-	if (dll->head == NULL) {
-		dll->tail = NULL;
-		dll->prev_tail = NULL;
-	}
-
-	dll->dlist_size--;
-	free(tmp);
-}
-
-void ClearDNodeLists(dlinked_list *dll)
-{
-	int dlist_size = dll->dlist_size;
-
-	for (int i = 0; i < dlist_size; i++)
-		DequeueDNodeList(dll);
 }
 
