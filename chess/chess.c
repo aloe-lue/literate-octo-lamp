@@ -6,7 +6,7 @@
 
 #include "chess.h"
 
-void SetCoordByIdx(int coord[2], int idx)
+void set_coord_by_idx(int coord[2], int idx)
 {
 	int x = idx % 8;
 	int y = idx / 8;
@@ -15,7 +15,7 @@ void SetCoordByIdx(int coord[2], int idx)
 	coord[1] = y;
 }
 
-int GetIdxByCoord(int coord[2])
+int get_idx_by_coord(int coord[2])
 {
 	int y = coord[1] * 8;
 	int idx = y + coord[0];
@@ -26,7 +26,7 @@ int GetIdxByCoord(int coord[2])
 const char *CHESS_FILES = "abcdefgh";
 const char *CHESS_RANKS = "87654321";
 
-void SetSquareByIdx(char square[3], int idx)
+void set_square_by_idx(char square[3], int idx)
 {
 	int x = idx % 8;
 	int y = idx / 8;
@@ -35,31 +35,27 @@ void SetSquareByIdx(char square[3], int idx)
 	square[1] = CHESS_RANKS[y];
 }
 
-void SetCoordBySquare(int coord[2], char square[3])
-{
-	coord[0] = CHESS_FILES[coord[0]];
-	coord[1] = CHESS_RANKS[coord[1]];
-}
 
-int GetRowByRank(const char RANK)
+int get_row_by_rank(const char RANK)
 {
 	int row = 0;
 
-	for (int i = 56; i >= 49; i--) {
+	for (int i = '8'; i >= '1'; i--) {
 		if (RANK == i)
 			return row;
 
 		row++;
 	}
+
 	return 8;
 }
 
 
-int GetColumnByFile(const char FILECC)
+int get_column_by_file(const char FILECC)
 {
 	int column = 0;
 
-	for (int i = 97; i <= 104; i++) {
+	for (int i = 'a'; i <= 'h'; i++) {
 		if (FILECC == i)
 			return column;
 
@@ -69,29 +65,144 @@ int GetColumnByFile(const char FILECC)
 	return 8;
 }
 
-int GetIdxBySquare(char square[3])
+
+int get_idx_by_square(char square[3])
 {
-	int row = GetRowByRank(square[0]);
-	int column = GetColumnByFile(square[1]);
+	int row = get_row_by_rank(square[0]);
+	int column = get_column_by_file(square[1]);
 
 	if (row == 8 || column == 8)
 		return 64;
 
-	int idx = (column * 8) + row;
+	int idx = (row * 8) + column;
 
 	return idx;
 }
 
-int IsPawnMoveLegal(chess_square *squares, int coord[2], int i)
+void set_coord_by_square(int coord[2], char square[3])
 {
+	coord[0] = get_column_by_file(square[0]);
+	coord[1] = get_row_by_rank(square[1]);
 }
 
-int IsXYBetweenAB(int x, int y, const int a, const int b)
+static int piece_color_turn  = 1;
+
+int can_pawn_move_2_blocks_forward(chess_square *squares, int src_idx,
+		int dest_idx)
+{
+	if (piece_color_turn == 1 && (src_idx >= 48 && src_idx <= 55)
+			&& !squares[dest_idx-8].contain_piece
+			&& !squares[dest_idx].contain_piece)
+		return 1;
+
+	if (piece_color_turn == 0 && (src_idx >= 8 && src_idx <= 15)
+			&& !squares[dest_idx+8].contain_piece
+			&& !squares[dest_idx].contain_piece)
+		return 1;
+
+	return 0;
+}
+
+int can_pawn_move_diagonal_left(chess_square *squares, int src_idx,
+		int dest_idx)
+{
+	int is_left_edge = src_idx % 8 == 0;
+
+	if (piece_color_turn == 1 && !is_left_edge 
+			&& (squares[src_idx].special_move == 1
+				|| squares[src_idx].special_move == 0)
+			&& (src_idx >= 0 && src_idx < 64)
+			&& (squares[dest_idx].contain_piece
+				&& squares[dest_idx].piece_color == 0))
+		return 1;
+
+	if (piece_color_turn == 1 && !is_left_edge
+			&& (squares[src_idx].special_move == 1)
+			&& (src_idx >= 24 && src_idx <= 31)
+			&& (!squares[dest_idx].contain_piece
+				&& squares[src_idx-1].piece_color == 0))
+		return 1;
+
+	if (piece_color_turn == 0 && !is_left_edge 
+			&& (squares[src_idx].special_move == 1
+				|| squares[src_idx].special_move == 0)
+			&& (src_idx >= 0 && src_idx < 64)
+			&& (squares[dest_idx].contain_piece
+				&& squares[dest_idx].piece_color == 1))
+		return 1;
+
+	if (piece_color_turn == 0 && !is_left_edge
+			&& (squares[src_idx].special_move == 1)
+			&& (src_idx >= 32 && src_idx <= 40)
+			&& (!squares[dest_idx].contain_piece
+				&& squares[src_idx-1].piece_color == 1))
+		return 1;
+
+	return 0;
+}
+
+int can_pawn_move_diagonal_right(chess_square *squares, int src_idx,
+		int dest_idx)
+{
+	int is_right_edge = (src_idx+1) % 8 == 0;
+
+	if (piece_color_turn == 1 && !is_right_edge 
+			&& (squares[src_idx].special_move == 1
+				|| squares[src_idx].special_move == 0)
+			&& (src_idx >= 0 && src_idx < 64)
+			&& (squares[dest_idx].contain_piece
+				&& squares[dest_idx].piece_color == 0))
+		return 1;
+
+	if (piece_color_turn == 1 && !is_right_edge
+			&& (squares[src_idx].special_move == 1)
+			&& (src_idx >= 24 && src_idx <= 31)
+			&& (!squares[dest_idx].contain_piece
+				&& squares[src_idx+1].piece_color == 0))
+		return 1;
+
+	if (piece_color_turn == 0 && !is_right_edge 
+			&& (squares[src_idx].special_move == 1
+				|| squares[src_idx].special_move == 0)
+			&& (src_idx >= 0 && src_idx < 64)
+			&& (squares[dest_idx].contain_piece
+				&& squares[dest_idx].piece_color == 1))
+		return 1;
+
+	if (piece_color_turn == 0 && !is_right_edge
+			&& (squares[src_idx].special_move == 1)
+			&& (src_idx >= 32 && src_idx <= 40)
+			&& (!squares[dest_idx].contain_piece
+				&& squares[src_idx+1].piece_color == 1))
+		return 1;
+
+	return 0;
+}
+
+int is_pawn_move_legal(chess_square *squares, int src_idx, int dest_idx, int i)
+{
+	switch (i) {
+	case 0:
+		if (!squares[dest_idx].contain_piece)
+			return 1;
+	case 1:
+		return can_pawn_move_2_blocks_forward(squares, src_idx,
+				dest_idx);
+	case 2:
+		return can_pawn_move_diagonal_left(squares, src_idx, dest_idx);
+	case 3:
+		return can_pawn_move_diagonal_right(squares, src_idx, dest_idx);
+	default:
+		return 0;
+	}
+}
+
+int is_xy_between_ab_inc(int x, int y, const int a, const int b)
 {
 	return ((x >= a && x <= b) && (y >= a && y <= b));
 }
 
-void SetPawnOffsetsByPieceColor(int piece_color, int idx, int coord[2])
+void set_pawn_offsets_by_piece_color(int piece_color, int idx, int coord[2])
 {
 	const int WPAWN_OFFSETS[4][2] = {{0,-1}, {0,-2}, {-1,-1}, {1,-1}};
 	const int BPAWN_OFFSETS[4][2] = {{0,1}, {0,2}, {-1,1}, {1,1}};
@@ -108,30 +219,29 @@ void SetPawnOffsetsByPieceColor(int piece_color, int idx, int coord[2])
 	}
 }
 
-void SetPawnDests(chess_square *squares, int coord[2])
+void set_pawn_dests(chess_square *squares, int coord[2])
 {
-
-	int idx_src = GetIdxByCoord(coord);
+	int idx_src = get_idx_by_coord(coord);
 	int piece_color = squares[idx_src].piece_color;
 
 	for (int i = 0; i < 4; i++) {
 		int xy[2] = {0};
 
-		SetPawnOffsetsByPieceColor(piece_color, i, coord);
+		set_pawn_offsets_by_piece_color(piece_color, i, coord);
 
 		int ax = coord[0] + xy[0];
 		int ay = coord[1] + xy[1];
 		int axy[2] = { ax, ay };
-		int idx = GetIdxByCoord(axy);
+		int idx = get_idx_by_coord(axy);
 
-		if (IsXYBetweenAB(ax, ay, 7, 7))
+		if (is_xy_between_ab_inc(ax, ay, 7, 7))
 			squares[i].chess_piece_dests[i] = idx;
 		else 
 			squares[i].chess_piece_dests[i] = 999;
 	}
 }
 
-void SetRookOffset(int rook_offsets[][2], int idx)
+void set_rook_offsets(int rook_offsets[][2], int idx)
 {
 	switch(idx) {
 	case 0:
@@ -149,10 +259,10 @@ void SetRookOffset(int rook_offsets[][2], int idx)
 	}
 }
 
-void SetRookDests(chess_square *squares, int coord[2])
+void set_rook_dests(chess_square *squares, int coord[2])
 {
 	int rook_offsets[][2] = {{0,1}, {1,0}, {0,-1},{-1,0}};
-	int r_idx_src = GetIdxByCoord(coord);
+	int r_idx_src = get_idx_by_coord(coord);
 
 	int j = 0;
 	for (int i = 0; i < 28; i++) {
@@ -161,25 +271,25 @@ void SetRookDests(chess_square *squares, int coord[2])
 		int ax = rook_offsets[j][0] + x;
 		int ay = rook_offsets[j][1] + y;
 		int axy[2] = { ax, ay };
-		int r_idx_dest = GetIdxByCoord(axy);
+		int r_idx_dest = get_idx_by_coord(axy);
 
-		if (IsXYBetweenAB(ax, ay, 7, 7))
+		if (is_xy_between_ab_inc(ax, ay, 7, 7))
 			squares[r_idx_src].chess_piece_dests[i] = r_idx_dest;
 		else
 			squares[r_idx_src].chess_piece_dests[i] = 999;
 
-		SetRookOffset(rook_offsets, j);
+		set_rook_offsets(rook_offsets, j);
 
 		if ((i+1) % 7 == 0)
 			j++;
 	}
 }
 
-void SetKnightDests(chess_square *squares, int coord[2])
+void set_knight_dests(chess_square *squares, int coord[2])
 {
 	int knight_offsets[8][2] = {{-1,2}, {1,2}, {2,1}, {2,-1}, {1,-2},
 		{-1,-2}, {-2,-1}, {-2,1}};
-	int n_src_idx = GetIdxByCoord(coord);
+	int n_src_idx = get_idx_by_coord(coord);
 
 	for (int i = 0; i < 8; i++) {
 		int x = coord[0];
@@ -187,9 +297,9 @@ void SetKnightDests(chess_square *squares, int coord[2])
 		int ax = knight_offsets[i][0] + x;
 		int ay = knight_offsets[i][1] + y;
 		int axy[] = {ax,ay};
-		int n_idx = GetIdxByCoord(axy);
+		int n_idx = get_idx_by_coord(axy);
 
-		if (IsXYBetweenAB(ax, ay, 7, 7) &&
+		if (is_xy_between_ab_inc(ax, ay, 7, 7) &&
 				// it doesn't fall on the same piece color
 				squares[n_src_idx].piece_color !=
 				squares[n_idx].piece_color)
@@ -199,7 +309,7 @@ void SetKnightDests(chess_square *squares, int coord[2])
 	}
 }
 
-void SetBishopOffsets(int bishop_offsets[][2], int idx)
+void set_bishop_offsets(int bishop_offsets[][2], int idx)
 {
 	switch(idx) {
 	case 0:
@@ -221,10 +331,10 @@ void SetBishopOffsets(int bishop_offsets[][2], int idx)
 	}
 }
 
-void SetBishopDests(chess_square *squares, int coord[2])
+void set_bishop_dests(chess_square *squares, int coord[2])
 {
 	int bishop_offsets[][2] = {{1,1}, {1,-1}, {-1,-1}, {-1, 1}};
-	int b_idx_src = GetIdxByCoord(coord);
+	int b_idx_src = get_idx_by_coord(coord);
 
 	int j = 0;
 	for (int i = 0; i < 28; i++) {
@@ -234,16 +344,16 @@ void SetBishopDests(chess_square *squares, int coord[2])
 		int ax = bishop_offsets[j][0] + x;
 		int ay = bishop_offsets[j][1] + y;
 		int axy[] = { ax, ay };
-		int b_idx = GetIdxByCoord(axy);
+		int b_idx = get_idx_by_coord(axy);
 		
-		SetBishopOffsets(bishop_offsets, j);
+		set_bishop_offsets(bishop_offsets, j);
 
 		if ((i+1) % 7 == 0)
 			j++;
 	}
 }
 
-void SetQueenOffsets(int queen_offsets[][2], int idx)
+void set_queen_offsets(int queen_offsets[][2], int idx)
 {
 	switch(idx) {
 	case 0: // top
@@ -277,7 +387,7 @@ void SetQueenOffsets(int queen_offsets[][2], int idx)
 	}
 }
 
-void SetQueenDests(chess_square *squares, int coord[2])
+void set_queen_dests(chess_square *squares, int coord[2])
 {
 	int queen_offsets[][2] = {{0,1}, {1,0}, {0,-1},{-1,0},
 		{1,1}, {1,-1}, {-1,-1}, {-1,1}};
@@ -290,20 +400,20 @@ void SetQueenDests(chess_square *squares, int coord[2])
 		int ax = queen_offsets[j][0] + y;
 		int ay = queen_offsets[j][1] + x;
 		int axy[] = {ax,ay};
-		int q_idx = GetIdxByCoord(axy);
+		int q_idx = get_idx_by_coord(axy);
 
-		SetQueenOffsets(queen_offsets, j);
+		set_queen_offsets(queen_offsets, j);
 
 		if ((i+1) % 7 == 0)
 			j++;
 	}
 }
 
-void SetKingDests(chess_square *squares, int coord[2])
+void set_king_dests(chess_square *squares, int coord[2])
 {
 	int king_offsets[8][2] = {{-1,1}, {0, 1}, {1,1}, {1,0}, {1,-1}, {0,-1},
 		{-1,-1}, {-1,0}};
-	int k_idx_src = GetIdxByCoord(coord);
+	int k_idx_src = get_idx_by_coord(coord);
 
 	for (int i = 0; i < 8; i++) {
 		int x = coord[0];
@@ -311,17 +421,17 @@ void SetKingDests(chess_square *squares, int coord[2])
 		int ax = king_offsets[i][0] + x;
 		int ay = king_offsets[i][1] + y;
 		int axy[] = { ax, ay };
-		int k_idx = GetIdxByCoord(axy);
+		int k_idx = get_idx_by_coord(axy);
 	}
 }
 
-void InitPawns(chess_square *squares)
+void init_pawns(chess_square *squares)
 {
 	for (int i = 8; i < 16; i++) {
 		int coord[] = {-1,-1};
 
-		SetCoordByIdx(coord, i);
-		SetPawnDests(squares, coord);
+		set_coord_by_idx(coord, i);
+		set_pawn_dests(squares, coord);
 		strcpy(squares[i].piece_symbol, BPAWN);
 
 		squares[i].piece_color = 0;
@@ -333,8 +443,8 @@ void InitPawns(chess_square *squares)
 	for (int i = 48; i < 56; i++) {
 		int coord[] = {-1, -1};
 
-		SetCoordByIdx(coord, i);
-		SetPawnDests(squares, coord);
+		set_coord_by_idx(coord, i);
+		set_pawn_dests(squares, coord);
 		strcpy(squares[i].piece_symbol, WPAWN);
 
 		squares[i].piece_color = 1;
@@ -345,7 +455,7 @@ void InitPawns(chess_square *squares)
 }
 
 
-chess_square *InitChessSquare()
+chess_square *init_chess_squares()
 {
 	chess_square *squares = malloc(sizeof(chess_square) * 64);
 
@@ -356,8 +466,8 @@ chess_square *InitChessSquare()
 
 	int square_color = 0;
 	for (int i = 0; i < 64; i++) {
-		SetCoordByIdx(squares[i].coordinate, i);
-		SetSquareByIdx(squares[i].square, i);
+		set_coord_by_idx(squares[i].coordinate, i);
+		set_square_by_idx(squares[i].square, i);
 
 		squares[i].contain_piece = 0;
 		squares[i].piece_color = 2;
@@ -374,7 +484,7 @@ chess_square *InitChessSquare()
 	return squares;
 }
 
-void DrawChessBoard(chess_square *squares)
+void draw_chessboard(chess_square *squares)
 {
 	char chessboard[1024] = "\0";
 	const char *FILES = "*  a  b  c  d  e  f  g  h  *";
@@ -407,12 +517,12 @@ void DrawChessBoard(chess_square *squares)
 	puts(chessboard);
 }
 
-void ClearChessSquare(chess_square *squares)
+void clear_chess_squares(chess_square *squares)
 {
 	free(squares);
 }
 
-int GetPieceByNotation(char piece_notation)
+int piece_by_notation(char piece_notation)
 {
 	switch(piece_notation) {
 	case 'b':
@@ -432,14 +542,13 @@ int GetPieceByNotation(char piece_notation)
 	}
 }
 
-static int piece_color_turn  = 1; // white first
 
-int SetPieceDestTo(chess_square *squares, const char *NOTATION)
+int set_piece_dest_to(chess_square *squares, const char *NOTATION)
 {
-	int piece = GetPieceByNotation(NOTATION[0]);
+	int piece = piece_by_notation(NOTATION[0]);
 
 	if (!piece)
-		return 100;
+		return 1;
 
 	int j = 0;
         int k = 0;
@@ -451,12 +560,13 @@ int SetPieceDestTo(chess_square *squares, const char *NOTATION)
 	for (int i = 3; i < 5; i++)
 		notation_dest[k] = NOTATION[i];
 	
-	int src_idx = GetIdxBySquare(notation_src);	
-	int dest_idx = GetIdxBySquare(notation_dest);
+	int src_idx = get_idx_by_square(notation_src);	
+	int dest_idx = get_idx_by_square(notation_dest);
 
 	if (src_idx == 64 || dest_idx == 64)
-		return 200;
-
+		return 2;
+	
+	return 0;
 }
 
 
