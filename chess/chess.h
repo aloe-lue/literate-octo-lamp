@@ -19,8 +19,8 @@
 // chess piece
 #define PAWN	 	1
 #define KNIGHT 		2
-#define BISHOP 		3
-#define ROOK 		4
+#define ROOK 		3
+#define BISHOP 		4
 #define QUEEN 		5
 #define KING 		6
 
@@ -29,16 +29,17 @@
 #define WHITESQUARE	" □ "
 
 typedef struct chess_square {
-	int coordinate[2];
+	int filters[8];
 	int piece_color;
 	int contain_piece;
 	int chess_piece;
 	int special_move;
-	int square_color;
 	int chess_piece_dests[56];
-	char square[3];
+	int square_color;
+	int coordinate[2];
 	char piece_notation;
 	char piece_symbol[12];
+	char square[3];
 } chess_square;
 
 /*
@@ -131,8 +132,15 @@ void set_queen_offsets(int queen_offsets[][2], int idx);
 
 void set_queen_dests(chess_square *squares, int coord[2]);
 
-
+/*
+ * init default pawn position
+ */
 void init_pawns(chess_square *squares);
+
+/*
+ * init default rooks position
+ */
+void init_rooks(chess_square *squares);
 
 
 chess_square *init_chess_squares();
