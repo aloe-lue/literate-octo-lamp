@@ -34,7 +34,7 @@ typedef struct chess_square {
 	int contain_piece;
 	int chess_piece;
 	int special_move;
-	int chess_piece_dests[56];
+	int piece_dests[56];
 	int square_color;
 	int coordinate[2];
 	char piece_notation;
@@ -74,89 +74,47 @@ int get_column_by_file(const char FILECC);
 int get_idx_by_square(char square[3]);
 
 /*
- * filters out diagonal left and right from center
- */
-int can_pawn_move_2_blocks_forward(chess_square *squares, int src_idx,
-		int dest_idx);
-
-int can_pawn_move_diagonal_left(chess_square *squares, int src_idx,
-		int dest_idx);
-
-int can_pawn_move_diagonal_right(chess_square *squares, int src_idx,
-		int dest_idx);
-
-/*
- * filters pawn destinations
- */
-int is_pawn_move_legal(chess_square *squares, int src_idx, int dest_idx, int i);
-
-/*
- * aux 
+ * filter move
  */
 int is_xy_between_ab_inc(int x, int y, const int a, const int b);
 
 /*
  * aux func for set pawn dests
  */
-void set_pawn_offsets_by_piece_color(int piece_color, int idx, int coord[2]);
+int can_pstep_dforward(int src, int dest);
+int can_pstep_rdiagonal(int src, int dest);
+int can_pstep_ldiagonal(int src, int dest);
+int is_pawn_move_valid(int i, int src, int dest);
 /*
  * set pawn dests by coord and square
  */
-void set_pawn_dests(chess_square *squares, int coord[2]);
+void set_pawn_dests(int coord[2]);
+
+/*
+ * aux func that helps with castling
+ */
+int can_castling(int color, int src, int dest);
 
 /*
  * set rook offsets malamang
  * this is bad naming
  */
-void set_rook_offsets(int rook_offsets[][2], int idx);
-
-
-void set_rook_dests(chess_square *squares, int coord[2]);
-
-
-void set_knight_dests(chess_square *squares, int coord[2]);
+void set_knight_dests(int coord[2]);
 
 /*
- * aux function for bishop dests
+ * set default pawn position
  */
-void set_bishop_offsets(int bishop_offsets[][2], int idx);
-
-
-void set_bishop_dests(chess_square *squares, int coord[2]);
+void init_pawns();
 
 /*
- * aux function for setqueendests
+ * initialize chessboard
  */
-void set_queen_offsets(int queen_offsets[][2], int idx);
+void init_chessboard();
 
-
-void set_queen_dests(chess_square *squares, int coord[2]);
-
-/*
- * init default pawn position
- */
-void init_pawns(chess_square *squares);
-
-/*
- * init default rooks position
- */
-void init_rooks(chess_square *squares);
-
-
-chess_square *init_chess_squares();
-
-
-void clear_chess_squares(chess_square *squares);
 
 /*
  * print ascii chessboard
  */
-void draw_chessboard(chess_square *squares);
-
-/*
- * put the chess piece from here to there.
- */
-int set_piece_dest_to(chess_square *squares, const char *NOTATION);
-
+void draw_chessboard();
 
 #endif // chess.h
