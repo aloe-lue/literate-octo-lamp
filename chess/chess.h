@@ -35,6 +35,7 @@ typedef struct chess_square {
 	int chess_piece;
 	int special_move;
 	int piece_dests[56];
+	int piece_total_dests;
 	int square_color;
 	int coordinate[2];
 	char piece_notation;
@@ -85,10 +86,16 @@ int can_pstep_dforward(int src, int dest);
 int can_pstep_rdiagonal(int src, int dest);
 int can_pstep_ldiagonal(int src, int dest);
 int is_pawn_move_valid(int i, int src, int dest);
+
 /*
  * set pawn dests by coord and square
  */
 void set_pawn_dests(int coord[2]);
+
+/*
+ * give the knight destinations in idx
+ */
+void set_knight_dests(int coord[2]);
 
 /*
  * aux func that helps with castling
@@ -96,15 +103,29 @@ void set_pawn_dests(int coord[2]);
 int can_castling(int color, int src, int dest);
 
 /*
- * set rook offsets malamang
- * this is bad naming
+ * give the rook destinations in idx
  */
-void set_knight_dests(int coord[2]);
+void set_rook_dests(int coord[2]);
+
+/*
+ * give the bishop destinations in idx
+ */
+void set_bishop_dests(int coord[2]);
 
 /*
  * set default pawn position
  */
 void init_pawns();
+
+/*
+ * set default rooks position
+ */
+void init_rooks();
+
+/*
+ * set default bishops position
+ */
+void init_bishops();
 
 /*
  * initialize chessboard

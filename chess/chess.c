@@ -216,6 +216,28 @@ void set_pawn_dests(int coord[2])
 	}
 }
 
+void set_knight_dests(int coord[2])
+{
+	int n[][2] = {{1, 2}, {-1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, -2},
+		{-2, 1}, {-2, -1}};
+	int nlen = sizeof(n) / sizeof(n[0]);
+	int src = get_idx_by_coord(coord);
+	int color = squares[src].piece_color;
+
+	for (int i = 0; i < nlen; i++) {
+		int x = coord[0] + n[i][0];
+		int y = coord[1] + n[i][1];
+		int xy[] = { x, y };
+		int dest = get_idx_by_coord(xy);
+
+		if (is_xy_between_ab_inc(x, y, 0, 7)
+		    && squares[dest].piece_color != color)
+			squares[src].piece_dests[i] = dest;
+		else 
+			squares[src].piece_dests[i] = -1;
+	}
+}
+
 int can_castling(int color, int src, int dest)
 {
 	int bound = color == 1 ? src > 31 : src < 32;
@@ -297,6 +319,72 @@ void set_rook_dests(int coord[2])
 			edge = 0;
 		}
 	}
+}
+
+void set_bishop_dests(int coord[2])
+{
+	int src = get_idx_by_coord(coord);
+	int color = squares[src].piece_color;
+	int b[][2] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+	int blen = (sizeof(b) / sizeof(b[0])) * 7;
+	int bedge = 0;
+	int j = 0;
+
+	for (int i = 0; i < blen; i++) {
+		int x = b[j][0] + coord[0];
+		int y = b[j][1] + coord[1];
+		int xy[] = { x, y };
+		int dest = get_idx_by_coord(xy);
+
+		if (is_xy_between_ab_inc(x, y, 0, 7)) {
+			int dest_clr = squares[dest].piece_color;
+			int contain_piece = squares[dest].contain_piece;
+
+			if (contain_piece && dest_clr == color) {
+				bedge = 1;
+				squares[src].piece_dests[i] = -1;
+			}
+
+			if (contain_piece && dest_clr != color) {
+				bedge = 1;
+				squares[src].piece_dests[i] = dest;
+			}
+
+			if (dest_clr && bedge == 0)
+				squares[src].piece_dests[i] = dest;
+			else
+				squares[src].piece_dests[i] = -1;
+		
+		} else 
+			squares[src].piece_dests[i] = -1;
+
+		switch(j) {
+		case 0: 
+			b[j][0]++;
+			b[j][1]++;
+			break;
+		case 1:
+			b[j][0]--;
+			b[j][1]++;
+			break;
+		case 2: 
+			b[j][0]++;
+			b[j][1]--;
+			break;
+		case 3: 
+			b[j][0]--;
+			b[j][1]--;
+			break;
+		}
+
+		int bound_last_step = (i+1) % 7 == 0;
+
+		if (bound_last_step) {
+			j++;
+			bedge = 0;
+		}
+	}
+
 }
 
 void init_pawns()
@@ -388,6 +476,46 @@ void init_rooks()
 	}
 }
 
+void init_bishops()
+{
+	int b[] = {2, 5, 58, 61};
+	int blen = sizeof(b) / sizeof(b[0]);
+
+	for (int i = 0; i < blen; i++) {
+		int bidx = b[i];
+
+		if (bidx > 5) {
+			squares[bidx].piece_color = 1;
+			strcpy(squares[bidx].piece_symbol, WBISHOP);
+		} else {
+			squares[bidx].piece_color = 2;
+			strcpy(squares[bidx].piece_symbol, BBISHOP);
+		}
+
+		squares[bidx].piece_notation = 'b';
+		squares[bidx].chess_piece = 4;
+		squares[bidx].special_move = 0;
+		squares[bidx].contain_piece = 1;
+	}
+	for (int i = 0; i < blen; i++) {
+		int bidx = b[i];
+		int xy[] = {-1, -1};
+
+		set_coord_by_idx(xy, bidx);
+		set_bishop_dests(xy);
+	}
+}
+
+void print_piece_dests(int piece)
+{
+	for (int i = 0; i < 56; i++) {
+		int dest = squares[2].piece_dests[i];
+		char square[3] = "\0";
+		set_square_by_idx(square, dest);
+		
+		printf(" %c%c ", square[0], square[1]);
+	}
+}
 
 void init_chessboard()
 {
@@ -411,12 +539,11 @@ void init_chessboard()
 		for (int j = 0; j < 56; j++)
 			squares[i].piece_dests[j] = -1;
 	}
-	init_pawns();
-	init_rooks();
+	// init_pawns();
+	// init_knights();
+	// init_rooks();
+	init_bishops();
 
-	for (int i = 0; i < 56; i++) {
-		printf(" %d ", squares[63].piece_dests[i]);
-	}
 }
 
 void draw_chessboard()
