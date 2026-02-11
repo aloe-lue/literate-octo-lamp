@@ -1,6 +1,8 @@
 #ifndef CHESS_H
 #define CHESS_H
 
+#include "array.h"
+
 // unicode for chess piece
 #define WKING		" \u2654 "
 #define WQUEEN		" \u2655 "
@@ -34,8 +36,7 @@ typedef struct chess_square {
 	int contain_piece;
 	int chess_piece;
 	int special_move;
-	int piece_dests[56];
-	int piece_total_dests;
+	Number *piece_dests;
 	int square_color;
 	int coordinate[2];
 	char piece_notation;
@@ -137,5 +138,27 @@ void init_chessboard();
  * print ascii chessboard
  */
 void draw_chessboard();
+
+/**
+ * helper function for general purpose
+ */
+char *get_chess_piece_by_number(int number);
+/*
+ * clear all the piece_dests number numbers
+ */
+void destroy_chess_piece_dests();
+
+/*
+ * useful for debugging piece dests
+ */
+void print_piece_dests();
+
+void reverse(char s[]);
+/*
+ * convert int to ascii
+ *
+ * from K&R
+ */
+void itoa(int n, char s[]);
 
 #endif // chess.h

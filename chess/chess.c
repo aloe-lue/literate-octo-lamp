@@ -5,6 +5,8 @@
 #include <math.h>
 
 #include "chess.h"
+#include "array.h"
+#include "merge_sort.h"
 
 chess_square squares[64];
 
@@ -210,10 +212,11 @@ void set_pawn_dests(int coord[2])
 
 		if (is_xy_between_ab_inc(ax, ay, 0, 7)
 		    && is_pawn_move_valid(i, src, dest))
-			squares[src].piece_dests[i] = dest;
-		else 
-			squares[src].piece_dests[i] = -1;
+			push_number(&squares[src].piece_dests, dest);
 	}
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
 }
 
 void set_knight_dests(int coord[2])
@@ -232,10 +235,11 @@ void set_knight_dests(int coord[2])
 
 		if (is_xy_between_ab_inc(x, y, 0, 7)
 		    && squares[dest].piece_color != color)
-			squares[src].piece_dests[i] = dest;
-		else 
-			squares[src].piece_dests[i] = -1;
+			push_number(&squares[src].piece_dests, dest);
 	}
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
 }
 
 int can_castling(int color, int src, int dest)
@@ -278,24 +282,20 @@ void set_rook_dests(int coord[2])
 
 			if (contain_piece && dest_clr == color) {
 				edge = 1;
-				squares[src].piece_dests[i] = -1;
 			}
 
 			if (contain_piece && dest_clr != color) {
 				edge = 1;
-				squares[src].piece_dests[i] = dest;
+				push_number(&squares[src].piece_dests, dest);
 			}
 
 			if (dest_clr && edge == 0)
-				squares[src].piece_dests[i] = dest;
+				push_number(&squares[src].piece_dests, dest);
 			else if (dest_clr == color
 				 && squares[dest].chess_piece == 6
 				 && can_castling(color, src, dest))
-				squares[src].piece_dests[i] = dest;
-			else
-				squares[src].piece_dests[i] = -1;
-		} else 
-			squares[src].piece_dests[i] = -1;
+				push_number(&squares[src].piece_dests, dest);
+		}
 		
 		switch(j) {
 		case 0:
@@ -319,6 +319,9 @@ void set_rook_dests(int coord[2])
 			edge = 0;
 		}
 	}
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
 }
 
 void set_bishop_dests(int coord[2])
@@ -342,21 +345,16 @@ void set_bishop_dests(int coord[2])
 
 			if (contain_piece && dest_clr == color) {
 				bedge = 1;
-				squares[src].piece_dests[i] = -1;
 			}
 
 			if (contain_piece && dest_clr != color) {
 				bedge = 1;
-				squares[src].piece_dests[i] = dest;
+				push_number(&squares[src].piece_dests, dest);
 			}
 
 			if (dest_clr && bedge == 0)
-				squares[src].piece_dests[i] = dest;
-			else
-				squares[src].piece_dests[i] = -1;
-		
-		} else 
-			squares[src].piece_dests[i] = -1;
+				push_number(&squares[src].piece_dests, dest);
+		}
 
 		switch(j) {
 		case 0: 
@@ -384,6 +382,9 @@ void set_bishop_dests(int coord[2])
 			bedge = 0;
 		}
 	}
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
 
 }
 
@@ -506,17 +507,6 @@ void init_bishops()
 	}
 }
 
-void print_piece_dests(int piece)
-{
-	for (int i = 0; i < 56; i++) {
-		int dest = squares[2].piece_dests[i];
-		char square[3] = "\0";
-		set_square_by_idx(square, dest);
-		
-		printf(" %c%c ", square[0], square[1]);
-	}
-}
-
 void init_chessboard()
 {
 	int square_color = 0;
@@ -536,8 +526,8 @@ void init_chessboard()
 		if ((i+1) % 8 != 0)
 			square_color = square_color == 0 ? 1 : 0;
 
-		for (int j = 0; j < 56; j++)
-			squares[i].piece_dests[j] = -1;
+		squares[i].piece_dests = init_number();
+
 	}
 	// init_pawns();
 	// init_knights();
@@ -581,5 +571,89 @@ void draw_chessboard()
 }
 
 
+void destroy_chess_piece_dests()
+{
+	for (int i = 0; i < 64; i++) {
+		Number *number = squares[i].piece_dests;
+
+		clear_number_numbers(&number);	
+		destroy_number(&number);
+	}
+}
+
+void reverse(char s[])
+{
+	int c, i, j;
+
+	for (i = 0, j = strlen(s)-1; i < j; i++, j--) {
+		c = s[i];
+		s[i] = s[j];
+		s[j] = c;
+	}
+}
+
+void itoa(int n, char s[])
+{
+	int i, sign;
+
+	if ((sign = n) < 0)
+		n = -n;
+	i = 0;
+	do {
+		s[i++] = n % 10 + '0';
+	} while ((n /= 10) > 0);
+
+	if (sign < 0)
+		s[i++] = '-';
+	s[i] = '\0';
+	reverse(s);
+}
+
+char asc[5] = "\0";
+char *get_chess_piece_by_number(int number)
+{
+	switch(number) {
+	case 1:
+		return "pawn";
+	case 2:
+		return "knight";
+	case 3:
+		return "rook";
+	case 4:
+		return "bishop";
+	case 5:
+		return "queen";
+	case 6:
+		return "king";
+	default:
+		itoa(number, asc);
+		return asc;
+	}
+}
+
+
+
+
+void print_piece_dests()
+{
+	for (int i = 0; i < 64; i++) {
+		Number *number = squares[i].piece_dests;
+		int piece_number = squares[i].chess_piece;
+		char *chess_piece = get_chess_piece_by_number(piece_number);
+		char square[3] = "\0";
+	
+		set_square_by_idx(square, i);
+		printf("%s from %s: moves->", chess_piece, square);
+
+		for (int i = 0; i < number->size; i++) {
+			char square[3] = "\0";
+
+			set_square_by_idx(square, number->numbers[i]);
+			printf(" %s ", square);
+		}
+
+		printf("\n");
+	}
+}
 
 
