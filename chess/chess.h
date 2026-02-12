@@ -114,6 +114,16 @@ void set_rook_dests(int coord[2]);
 void set_bishop_dests(int coord[2]);
 
 /*
+ * give the queen destinations in idx
+ */
+void set_queen_dests(int coord[2]);
+
+/*
+ * give the king destinations in idx
+ */
+void set_king_dests(int coord[2]);
+
+/*
  * set default pawn position
  */
 void init_pawns();
@@ -127,6 +137,16 @@ void init_rooks();
  * set default bishops position
  */
 void init_bishops();
+
+/*
+ * set default queens position
+ */
+void init_queens();
+
+/*
+ * set default kings position
+ */
+void init_kings();
 
 /*
  * initialize chessboard

@@ -107,7 +107,7 @@ int can_pstep_dforward(int src, int dest)
 	int white = squares[src].piece_color;
 	int bound;
 
-	bound = white ? src >= 48 && src < 56 : src >= 7 && src < 16;
+	bound = white == 1 ? src >= 48 && src < 56 : src >= 7 && src < 16;
 	
 	if (!bound)
 		return 0;
@@ -195,13 +195,13 @@ void set_pawn_dests(int coord[2])
 		int y = 0;
 
 		switch(piece_color) {
-		case 0:
-			x = bpawn_offsets[i][0];
-			y = bpawn_offsets[i][1];
-			break;
 		case 1:
 			x = wpawn_offsets[i][0];
 			y = wpawn_offsets[i][1];
+			break;
+		case 2:
+			x = bpawn_offsets[i][0];
+			y = bpawn_offsets[i][1];
 			break;
 		}
 
@@ -280,18 +280,17 @@ void set_rook_dests(int coord[2])
 			int dest_clr = squares[dest].piece_color;
 			int contain_piece = squares[dest].contain_piece;
 
-			if (contain_piece && dest_clr == color) {
+			if (edge == 0 && contain_piece && dest_clr == color)
 				edge = 1;
-			}
 
-			if (contain_piece && dest_clr != color) {
+			if (edge == 0 && contain_piece && dest_clr != color) {
 				edge = 1;
 				push_number(&squares[src].piece_dests, dest);
 			}
 
 			if (dest_clr && edge == 0)
 				push_number(&squares[src].piece_dests, dest);
-			else if (dest_clr == color
+			else if (dest_clr == color && edge  == 0
 				 && squares[dest].chess_piece == 6
 				 && can_castling(color, src, dest))
 				push_number(&squares[src].piece_dests, dest);
@@ -330,7 +329,7 @@ void set_bishop_dests(int coord[2])
 	int color = squares[src].piece_color;
 	int b[][2] = {{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 	int blen = (sizeof(b) / sizeof(b[0])) * 7;
-	int bedge = 0;
+	int edge = 0;
 	int j = 0;
 
 	for (int i = 0; i < blen; i++) {
@@ -343,16 +342,15 @@ void set_bishop_dests(int coord[2])
 			int dest_clr = squares[dest].piece_color;
 			int contain_piece = squares[dest].contain_piece;
 
-			if (contain_piece && dest_clr == color) {
-				bedge = 1;
-			}
+			if (edge == 0 && contain_piece && dest_clr == color)
+				edge = 1;
 
-			if (contain_piece && dest_clr != color) {
-				bedge = 1;
+			if (edge == 0 && contain_piece && dest_clr != color) {
+				edge = 1;
 				push_number(&squares[src].piece_dests, dest);
 			}
 
-			if (dest_clr && bedge == 0)
+			if (dest_clr && edge == 0)
 				push_number(&squares[src].piece_dests, dest);
 		}
 
@@ -379,13 +377,114 @@ void set_bishop_dests(int coord[2])
 
 		if (bound_last_step) {
 			j++;
-			bedge = 0;
+			edge = 0;
 		}
 	}
+
 	Number *number = squares[src].piece_dests;
 
 	merge_sort(number->numbers, 0, number->size-1);
+}
 
+void set_queen_dests(int coord[2])
+{
+	int src = get_idx_by_coord(coord);
+	int color = squares[src].piece_color;
+	int q[][2] = {{0, 1}, {1, 0}, {0, -1}, {-1, 0},
+		{1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
+	int qlen = (sizeof q / sizeof q[0]) * 7;
+	int j = 0;
+	int edge = 0;
+
+	for (int i = 0; i < qlen; i++) {
+		int x = coord[0] + q[j][0];
+		int y = coord[1] + q[j][1];
+		int xy[] = { x, y };
+		int dest = get_idx_by_coord(xy);
+
+		
+		if (is_xy_between_ab_inc(x, y, 0, 7)) {
+			int dest_clr = squares[dest].piece_color;
+			int contain_piece = squares[dest].contain_piece;
+
+			if (edge == 0 && contain_piece && dest_clr == color)
+				edge = 1;
+
+			if (edge == 0 && contain_piece && dest_clr != color) {
+				edge = 1;
+				push_number(&squares[src].piece_dests, dest);
+			}
+
+			if (dest_clr && edge == 0)
+				push_number(&squares[src].piece_dests, dest);
+			else if (dest_clr == color && edge  == 0)
+				push_number(&squares[src].piece_dests, dest);
+		}
+	
+
+		switch(j) {
+		case 0:
+			q[j][1]++;
+			break;
+		case 1:
+			q[j][0]++;
+			break;
+		case 2:
+			q[j][1]--;
+			break;
+		case 3:
+			q[j][0]--;
+			break;
+		case 4: 
+			q[j][0]++;
+			q[j][1]++;
+			break;
+		case 5:
+			q[j][0]--;
+			q[j][1]++;
+			break;
+		case 6: 
+			q[j][0]++;
+			q[j][1]--;
+			break;
+		case 7: 
+			q[j][0]--;
+			q[j][1]--;
+			break;
+		}
+
+		if ((i+1) % 7 == 0) {
+			j++;
+			edge = 0;
+		}
+	}
+
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
+}
+
+// the big deal about kings dests is that you have to track
+// enemy's dests to not get checked.
+void set_king_dests(int coord[2])
+{
+	int k[][2] = {{-1, 1}, {0, 1}, {1, 1}, {-1, 0}, {1, 0}, {-1, -1},
+		{0, -1}, {1, -1}};
+	int klen = sizeof(k) / sizeof (k[0]);
+	int src = get_idx_by_coord(coord);
+
+	for (int i = 0; i < klen; i++) {
+		int x = coord[0] + k[i][0];
+		int y = coord[1] + k[i][1];
+		int xy[] = { x, y };
+		int dest = get_idx_by_coord(xy);
+		
+
+	}
+
+	Number *number = squares[src].piece_dests;
+
+	merge_sort(number->numbers, 0, number->size-1);
 }
 
 void init_pawns()
@@ -398,15 +497,11 @@ void init_pawns()
 		int pwns = e_idxs[i];
 		int coord[] = {-1, -1};
 
-		if (pwns > 15) {
-			squares[pwns].piece_color = 1;
+		if (pwns > 15)
 			strcpy(squares[pwns].piece_symbol, WPAWN);
-		} else {
-			squares[pwns].piece_color = 2;
+		else
 			strcpy(squares[pwns].piece_symbol, BPAWN);
-		}
 
-		squares[pwns].contain_piece = 1;
 		squares[pwns].special_move = 1;
 		squares[pwns].piece_notation = 'e';
 		squares[pwns].chess_piece = 1;
@@ -424,15 +519,11 @@ void init_knights()
 	for (int i = 0; i < nlen; i++) {
 		int nidx = n[i];
 
-		if (nidx > 6) {
-			squares[nidx].piece_color = 1;
+		if (nidx > 6)
 			strcpy(squares[nidx].piece_symbol, WKNIGHT);
-		} else {
-			squares[nidx].piece_color = 2;
+		else
 			strcpy(squares[nidx].piece_symbol, BKNIGHT);
-		}
 		
-		squares[nidx].contain_piece = 1;
 		squares[nidx].piece_notation = 'n';
 		squares[nidx].chess_piece = 2;
 	}
@@ -454,20 +545,17 @@ void init_rooks()
 	for (int i = 0; i < rlen; i++) {
 		int ridx = r[i];
 
-		if (ridx > 15) {
-			squares[ridx].piece_color = 1;
+		if (ridx > 15)
 			strcpy(squares[ridx].piece_symbol, WROOK);
-		} else {
-			squares[ridx].piece_color = 2;
+		else
 			strcpy(squares[ridx].piece_symbol, BROOK);
-		}
 
-		squares[ridx].contain_piece = 1;
 		squares[ridx].special_move = 0;
 		squares[ridx].piece_notation = 'r';
 		squares[ridx].chess_piece = 3;
 		
 	}
+
 	for (int i = 0; i < rlen; i++) {
 		int ridx = r[i];
 		int xy[] = {-1, -1};
@@ -485,25 +573,74 @@ void init_bishops()
 	for (int i = 0; i < blen; i++) {
 		int bidx = b[i];
 
-		if (bidx > 5) {
-			squares[bidx].piece_color = 1;
+		if (bidx > 5)
 			strcpy(squares[bidx].piece_symbol, WBISHOP);
-		} else {
-			squares[bidx].piece_color = 2;
+		else
 			strcpy(squares[bidx].piece_symbol, BBISHOP);
-		}
 
 		squares[bidx].piece_notation = 'b';
 		squares[bidx].chess_piece = 4;
 		squares[bidx].special_move = 0;
-		squares[bidx].contain_piece = 1;
 	}
+
 	for (int i = 0; i < blen; i++) {
 		int bidx = b[i];
 		int xy[] = {-1, -1};
 
 		set_coord_by_idx(xy, bidx);
 		set_bishop_dests(xy);
+	}
+}
+
+void init_queens()
+{
+	int q[] = {3, 59};
+	int qlen = sizeof(q) / sizeof(q[0]);
+	
+	for (int i = 0; i < qlen; i++) {
+		int qidx = q[i];
+
+		if (qidx > 3)
+			strcpy(squares[qidx].piece_symbol, WQUEEN);
+		else
+			strcpy(squares[qidx].piece_symbol, BQUEEN);
+
+		squares[qidx].piece_notation = 'q';
+		squares[qidx].chess_piece = 5;
+		squares[qidx].special_move = 0;
+	}
+
+	for (int i = 0; i < qlen; i++) {
+		int qidx = q[i];
+		int xy[] = {-1, -1};
+
+		set_coord_by_idx(xy, qidx);
+		set_queen_dests(xy);
+	}
+}
+
+void init_kings()
+{
+	int k[] = {4, 60};
+	int klen = sizeof(k) / sizeof(k[0]);
+	for (int i = 0; i < klen; i++) {
+		int kidx = k[i];
+
+		if (kidx > 4)
+			strcpy(squares[kidx].piece_symbol, WKING);
+		else
+			strcpy(squares[kidx].piece_symbol, BKING);
+
+		squares[kidx].piece_notation = 'q';
+		squares[kidx].chess_piece = 5;
+		squares[kidx].special_move = 0;
+	}
+	for (int i = 0; i < klen; i++) {
+		int kidx = k[i];
+		int xy[] = {-1, -1};
+
+		set_coord_by_idx(xy, kidx);
+		set_king_dests(xy);
 	}
 }
 
@@ -528,11 +665,21 @@ void init_chessboard()
 
 		squares[i].piece_dests = init_number();
 
+		if (i >= 0 && i < 16) {
+			squares[i].piece_color = 2;
+			squares[i].contain_piece = 1;
+		}
+
+		if (i >= 48 && i < 64) {
+			squares[i].piece_color = 1;
+			squares[i].contain_piece = 1;
+		}
 	}
-	// init_pawns();
-	// init_knights();
-	// init_rooks();
+	init_pawns();
+	init_knights();
+	init_rooks();
 	init_bishops();
+	init_queens();
 
 }
 
