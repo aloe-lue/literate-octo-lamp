@@ -144,6 +144,10 @@ void init_bishops();
 void init_queens();
 
 /*
+ * cheating king
+ */
+int can_king_step_here(int dest, int color);
+/*
  * set default kings position
  */
 void init_kings();
@@ -163,6 +167,7 @@ void draw_chessboard();
  * helper function for general purpose
  */
 char *get_chess_piece_by_number(int number);
+
 /*
  * clear all the piece_dests number numbers
  */
@@ -173,12 +178,16 @@ void destroy_chess_piece_dests();
  */
 void print_piece_dests();
 
-void reverse(char s[]);
 /*
- * convert int to ascii
- *
+ * snippet from the book.
+ * convert int to ascii and reverse
+ * legendary code. indeed!
  * from K&R
  */
+void reverse(char s[]);
+
+
 void itoa(int n, char s[]);
+
 
 #endif // chess.h

@@ -10,6 +10,7 @@
 
 chess_square squares[64];
 
+
 void set_coord_by_idx(int coord[2], int idx)
 {
 	int x = idx % 8;
@@ -39,7 +40,6 @@ void set_square_by_idx(char square[3], int idx)
 	square[1] = CHESS_RANKS[y];
 }
 
-
 int get_row_by_rank(const char RANK)
 {
 	int row = 0;
@@ -54,7 +54,6 @@ int get_row_by_rank(const char RANK)
 	return 8;
 }
 
-
 int get_column_by_file(const char FILECC)
 {
 	int column = 0;
@@ -68,7 +67,6 @@ int get_column_by_file(const char FILECC)
 
 	return 8;
 }
-
 
 int get_idx_by_square(char square[3])
 {
@@ -214,6 +212,7 @@ void set_pawn_dests(int coord[2])
 		    && is_pawn_move_valid(i, src, dest))
 			push_number(&squares[src].piece_dests, dest);
 	}
+
 	Number *number = squares[src].piece_dests;
 
 	merge_sort(number->numbers, 0, number->size-1);
@@ -464,14 +463,44 @@ void set_queen_dests(int coord[2])
 	merge_sort(number->numbers, 0, number->size-1);
 }
 
-// the big deal about kings dests is that you have to track
-// enemy's dests to not get checked.
+// pieces are only declared thus only iteration happens in
+// each piece color, should thye be ignored if the piece is
+// no longer there -1
+int b_pieces[16][2] = {{0, 'r'}, {1, 'n'}, {2, 'b'}, {3, 'q'}, {4, 'k'},
+	{5, 'b'}, {6, 'n'}, {7, 'r'}, {8, 'e'}, {9, 'e'}, {10, 'e'}, {11, 'e'},
+	{12, 'e'}, {13, 'e'}, {14, 'e'}, {15, 'e'}};
+int w_pieces[16][2] = {{48, 'e'}, {49, 'e'}, {50, 'e'}, {51, 'e'},
+	{52, 'e'}, {53, 'e'}, {54, 'e'}, {55, 'e'}, {56, 'r'}, {57, 'n'},
+	{58, 'b'}, {59, 'q'}, {60, 'k'}, {61, 'b'}, {62, 'n'}, {63, 'r'}};
+// how to check? check happens when there's still available
+// safe destination to go. checkmate happens when there's no
+// escape or dest in this case init shouldn't count
+
+int can_king_step_here(int dest, int color)
+{
+	for (int i = 0; i < 16; i++) {
+		int op_src = color == 1 ? b_pieces[i][0] : w_pieces[i][0];
+		Number *numbers = squares[op_src].piece_dests;
+		int num_len = numbers->size;
+
+		if (num_len <= 0)
+			return 1;
+
+		for (int op_step = 0; op_step < num_len; op_step++)
+			if (numbers->numbers[op_step] == dest)
+				return 0;
+	}
+
+	return 1;
+}
+
 void set_king_dests(int coord[2])
 {
-	int k[][2] = {{-1, 1}, {0, 1}, {1, 1}, {-1, 0}, {1, 0}, {-1, -1},
+	int k[8][2] = {{-1, 1}, {0, 1}, {1, 1}, {-1, 0}, {1, 0}, {-1, -1},
 		{0, -1}, {1, -1}};
-	int klen = sizeof(k) / sizeof (k[0]);
+	int klen = sizeof(k) / sizeof(k[0]);
 	int src = get_idx_by_coord(coord);
+	int c = squares[src].piece_color;
 
 	for (int i = 0; i < klen; i++) {
 		int x = coord[0] + k[i][0];
@@ -479,7 +508,17 @@ void set_king_dests(int coord[2])
 		int xy[] = { x, y };
 		int dest = get_idx_by_coord(xy);
 		
+		if (is_xy_between_ab_inc(x, y, 0, 7)
+		    && can_king_step_here(dest, c)) {
+			int dc = squares[dest].piece_color;
+			int cp = squares[dest].contain_piece;
 
+			if (cp == 1 && c != dc)
+				push_number(&squares[src].piece_dests, dest);
+
+			if (cp != 1)
+				push_number(&squares[src].piece_dests, dest);
+		}
 	}
 
 	Number *number = squares[src].piece_dests;
@@ -526,15 +565,13 @@ void init_knights()
 		
 		squares[nidx].piece_notation = 'n';
 		squares[nidx].chess_piece = 2;
-	}
 
-	for (int i = 0; i < nlen; i++) {
-		int nidx = n[i];
 		int xy[] = { -1, -1 };
 
 		set_coord_by_idx(xy, nidx);
 		set_knight_dests(xy);
 	}
+
 }
 
 void init_rooks()
@@ -554,10 +591,6 @@ void init_rooks()
 		squares[ridx].piece_notation = 'r';
 		squares[ridx].chess_piece = 3;
 		
-	}
-
-	for (int i = 0; i < rlen; i++) {
-		int ridx = r[i];
 		int xy[] = {-1, -1};
 
 		set_coord_by_idx(xy, ridx);
@@ -581,15 +614,13 @@ void init_bishops()
 		squares[bidx].piece_notation = 'b';
 		squares[bidx].chess_piece = 4;
 		squares[bidx].special_move = 0;
-	}
 
-	for (int i = 0; i < blen; i++) {
-		int bidx = b[i];
 		int xy[] = {-1, -1};
 
 		set_coord_by_idx(xy, bidx);
 		set_bishop_dests(xy);
 	}
+
 }
 
 void init_queens()
@@ -599,6 +630,7 @@ void init_queens()
 	
 	for (int i = 0; i < qlen; i++) {
 		int qidx = q[i];
+		int xy[] = {-1, -1};
 
 		if (qidx > 3)
 			strcpy(squares[qidx].piece_symbol, WQUEEN);
@@ -608,11 +640,6 @@ void init_queens()
 		squares[qidx].piece_notation = 'q';
 		squares[qidx].chess_piece = 5;
 		squares[qidx].special_move = 0;
-	}
-
-	for (int i = 0; i < qlen; i++) {
-		int qidx = q[i];
-		int xy[] = {-1, -1};
 
 		set_coord_by_idx(xy, qidx);
 		set_queen_dests(xy);
@@ -623,6 +650,7 @@ void init_kings()
 {
 	int k[] = {4, 60};
 	int klen = sizeof(k) / sizeof(k[0]);
+
 	for (int i = 0; i < klen; i++) {
 		int kidx = k[i];
 
@@ -631,12 +659,10 @@ void init_kings()
 		else
 			strcpy(squares[kidx].piece_symbol, BKING);
 
-		squares[kidx].piece_notation = 'q';
-		squares[kidx].chess_piece = 5;
-		squares[kidx].special_move = 0;
-	}
-	for (int i = 0; i < klen; i++) {
-		int kidx = k[i];
+		squares[kidx].piece_notation = 'k';
+		squares[kidx].chess_piece = 6;
+		squares[kidx].special_move = 1;
+
 		int xy[] = {-1, -1};
 
 		set_coord_by_idx(xy, kidx);
@@ -680,6 +706,7 @@ void init_chessboard()
 	init_rooks();
 	init_bishops();
 	init_queens();
+	init_kings();
 
 }
 
@@ -778,29 +805,61 @@ char *get_chess_piece_by_number(int number)
 	}
 }
 
-
-
-
 void print_piece_dests()
 {
 	for (int i = 0; i < 64; i++) {
 		Number *number = squares[i].piece_dests;
 		int piece_number = squares[i].chess_piece;
 		char *chess_piece = get_chess_piece_by_number(piece_number);
-		char square[3] = "\0";
 	
-		set_square_by_idx(square, i);
-		printf("%s from %s: moves->", chess_piece, square);
+		printf("%s from %s: moves->", chess_piece,
+		       squares[i].square);
 
-		for (int i = 0; i < number->size; i++) {
-			char square[3] = "\0";
-
-			set_square_by_idx(square, number->numbers[i]);
-			printf(" %s ", square);
-		}
+		for (int i = 0; i < number->size; i++)
+			printf(" %s ", squares[number->numbers[i]].square);
 
 		printf("\n");
 	}
 }
 
+int get_chess_piece_by_letter(char letter)
+{
+	switch(letter) {
+	case 'b':
+		return 4;
+	case 'e':
+		return 1;
+	case 'k':
+		return 6;
+	case 'n':
+		return 2;
+	case 'q':
+		return 5;
+	case 'r':
+		return 3;
+	default: 
+		return 0;
+	}
+}
+
+static int piece_turn = 1;
+int set_piece_dest_to(char *notation)
+{
+	int piece = get_chess_piece_by_letter(notation[0]);
+
+	if (piece == 0)
+		return 1;
+
+	char src[3] = "\0";
+	char dest[3] = "\0";
+	int isrc = 0;
+	int idest = 0;
+
+	for (int i = 1; i < 3; i++)
+		src[isrc++] = notation[i];
+	for (int i = 3; i < 5; i++)
+		dest[idest++] = notation[i];
+
+		
+}
 
