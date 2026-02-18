@@ -842,24 +842,51 @@ int get_chess_piece_by_letter(char letter)
 	}
 }
 
+int chess_piece_contain_dest(int src, int dest)
+{
+	Number *steps = squares[src].piece_dests;
+
+	for (int i = 0; i < steps->size; i++) {
+		if (steps->numbers[i] == dest)
+			return 1;
+	}
+
+	return 0;
+}
+
 static int piece_turn = 1;
-int set_piece_dest_to(char *notation)
+int is_notation_valid(char *notation)
 {
 	int piece = get_chess_piece_by_letter(notation[0]);
 
 	if (piece == 0)
-		return 1;
+		return 1; // no such piece
 
 	char src[3] = "\0";
 	char dest[3] = "\0";
-	int isrc = 0;
-	int idest = 0;
+	int s = 0;
+	int d = 0;
 
 	for (int i = 1; i < 3; i++)
-		src[isrc++] = notation[i];
+		src[s++] = notation[i];
 	for (int i = 3; i < 5; i++)
-		dest[idest++] = notation[i];
+		dest[d++] = notation[i];
 
+	int sidx = get_idx_by_square(src);
+	int didx = get_idx_by_square(dest);
+
+	if (sidx == 64 && didx == 64)
+		return 2; // over the bound
+	if (sidx == 64 || didx == 64)
+		return 3; // over the bound from source or dest
+
+	if (squares[sidx].piece_color != piece_turn) // not the players nor
+						     // enemies turn
+		return 4;
+
+	if (!chess_piece_contain_dest(sidx, didx))
+		return 5; // illegal move
 		
+	return 0;
 }
 

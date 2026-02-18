@@ -189,5 +189,20 @@ void reverse(char s[]);
 
 void itoa(int n, char s[]);
 
+/*
+ * helps validates piece notation
+ */
+int get_chess_piece_by_letter(char letter);
+
+/*
+ * returns true if chess piece contain dest even dough(what? a bread) it's
+ * not
+ */
+int chess_piece_contain_dest(int src, int dest);
+
+/*
+ * input validation for chess notation 
+ */
+int is_notation_valid(char *notation);
 
 #endif // chess.h
