@@ -7,6 +7,7 @@
 #include "chess.h"
 #include "array.h"
 #include "merge_sort.h"
+#include "doubly_linked_list.h"
 
 chess_square squares[64];
 
@@ -855,17 +856,14 @@ int chess_piece_contain_dest(int src, int dest)
 }
 
 static int piece_turn = 1;
-int is_notation_valid(char *notation)
+int is_notation_valid(char *notation, char *src, char *dest)
 {
 	int piece = get_chess_piece_by_letter(notation[0]);
 
 	if (piece == 0)
 		return 1; // no such piece
 
-	char src[3] = "\0";
-	char dest[3] = "\0";
-	int s = 0;
-	int d = 0;
+	int s = 0, d = 0;
 
 	for (int i = 1; i < 3; i++)
 		src[s++] = notation[i];
@@ -880,8 +878,7 @@ int is_notation_valid(char *notation)
 	if (sidx == 64 || didx == 64)
 		return 3; // over the bound from source or dest
 
-	if (squares[sidx].piece_color != piece_turn) // not the players nor
-						     // enemies turn
+	if (squares[sidx].piece_color != piece_turn)
 		return 4;
 
 	if (!chess_piece_contain_dest(sidx, didx))
@@ -890,3 +887,68 @@ int is_notation_valid(char *notation)
 	return 0;
 }
 
+char *get_chess_dest(char *notation, int invalid_notation)
+{
+	if (invalid_notation == 1)
+		return "no such piece. valid piece b e k n q r";
+
+	if (invalid_notation == 2)
+		return "over the bound.";
+	else if (invalid_notation == 3)
+		return  "over the bound src or dest.";
+
+	if (invalid_notation == 4)
+		return "move your chess piece not the enemy.";
+
+	if (invalid_notation == 5)
+		return "Illegal move.";
+	
+	return notation;
+}
+
+void set_chess_piece_dest(char *src, char *dest)
+{
+}
+
+int is_checkmate = 0;
+
+// this function is too ambiguous
+void play_chess(void)
+{
+	char notation[7] = "\0";
+	int i = 0;
+
+	dlinked_list *queue1 = init_dlinked_list();
+	dlinked_list *queue2 = init_dlinked_list();
+
+	for (int ch; (ch = getchar()) != EOF;) {
+		notation[i] = ch;
+
+		if (i == 6) { // the last value is enter key
+			char src[3] = "\0";
+			char dest[3] = "\0";
+			int invalid = is_notation_valid(notation, src, dest);
+			char *notation = get_chess_dest(notation, invalid);
+
+			if (!invalid) {
+				enqueue_dnode_list(&queue1, notation);
+
+				// store queue for debug
+				enqueue_dnode_list(&queue2, notation);
+			} else
+				printf("%s", notation);
+
+		}
+		i++;
+	}
+ 
+    	// Test reason for reaching EOF.
+    	if (feof(stdin)) // if failure caused by end-of-file condition
+        	puts("End of file reached");
+    	else if (ferror(stdin)) {
+        	perror("getchar()");
+        	fprintf(stderr, "getchar() failed in file %s at line # %d\n",
+                	__FILE__, __LINE__ - 9);
+        	exit(EXIT_FAILURE);
+    	}
+}

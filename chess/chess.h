@@ -31,7 +31,6 @@
 #define WHITESQUARE	" □ "
 
 typedef struct chess_square {
-	int filters[8];
 	int piece_color;
 	int contain_piece;
 	int chess_piece;
@@ -203,6 +202,6 @@ int chess_piece_contain_dest(int src, int dest);
 /*
  * input validation for chess notation 
  */
-int is_notation_valid(char *notation);
+int is_notation_valid(char *notation, char *src, char *dest);
 
 #endif // chess.h

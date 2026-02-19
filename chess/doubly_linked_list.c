@@ -36,8 +36,10 @@ dnode_list *init_dnode_list(char *data)
 	return dnl;
 }
 
-void enqueue_dnode_list(dlinked_list *dll, char *data)
+void enqueue_dnode_list(dlinked_list **adll, char *data)
 {
+	dlinked_list *dll = *adll;
+
 	dnode_list *new_dnl = init_dnode_list(data);
 	
 	if (dll->dlist_size == 0 || dll->head == NULL) {
@@ -56,8 +58,10 @@ void enqueue_dnode_list(dlinked_list *dll, char *data)
 }
 
 
-void dequeue_dnode_list(dlinked_list *dll)
+void dequeue_dnode_list(dlinked_list **adll)
 {
+	dlinked_list *dll = *adll;
+
 	if (dll->dlist_size == 0) {
 		fprintf(stderr, "cannot dequeue empty dnodelist. ");
 		return;
@@ -77,12 +81,13 @@ void dequeue_dnode_list(dlinked_list *dll)
 	free(tmp_head);
 }
 
-void clear_dnode_lists(dlinked_list *dll)
+void clear_dnode_lists(dlinked_list **adll)
 {
+	dlinked_list *dll = *adll;
 	int dlist_size = dll->dlist_size;
 
 	for (int i = 0; i < dlist_size; i++)
-		dequeue_dnode_list(dll);
+		dequeue_dnode_list(&dll);
 }
 
 

@@ -36,18 +36,18 @@ dnode_list *init_dnode_list(char *data);
 /*
  * user input chess notation
  */
-void enqueue_dnode_list(dlinked_list *dll, char *data);
+void enqueue_dnode_list(dlinked_list **dll, char *data);
 
 /* 
  *  removes excessive and/or unnecessary user input moves
  *  or never remove things at all.
  */
-void dequeue_dnode_list(dlinked_list *dll);
+void dequeue_dnode_list(dlinked_list **adll);
 
 /*
  * clears dnodelist
  */
-void clear_dnode_lists(dlinked_list *dll);
+void clear_dnode_lists(dlinked_list **dll);
 
 /*
  * useful for debug from prevtail to head
