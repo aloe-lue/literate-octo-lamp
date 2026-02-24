@@ -843,6 +843,7 @@ int get_chess_piece_by_letter(char letter)
 	}
 }
 
+
 int chess_piece_contain_dest(int src, int dest)
 {
 	Number *steps = squares[src].piece_dests;
@@ -906,45 +907,62 @@ char *get_chess_dest(char *notation, int invalid_notation)
 	return notation;
 }
 
-void set_chess_piece_dest(char *src, char *dest)
+void handle_invalid_en_passant(dlinked_list **game_Q)
 {
+
 }
 
-int is_checkmate = 0;
+void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
+			  char *notation, int invalid)
+{
+	dlinked_list *gq = *game_Q;
+	dlinked_list *dq = *dbg_Q;
+
+	if (!invalid) {
+		enqueue_dnode_list(&gq, notation);
+		enqueue_dnode_list(&dq, notation);
+	} else
+		printf("%s\n", notation);
+
+	while (gq->dlist_size != 0) {
+
+		
+		dequeue_dnode_list(game_Q);
+	}
+
+}
+
 
 // this function is too ambiguous
-void play_chess(void)
+void play_chess_user_inputs(void)
 {
 	char notation[7] = "\0";
 	int i = 0;
 
-	dlinked_list *queue1 = init_dlinked_list();
-	dlinked_list *queue2 = init_dlinked_list();
+	dlinked_list *game_Q = init_dlinked_list();
+	dlinked_list *dbg_Q = init_dlinked_list();
 
 	for (int ch; (ch = getchar()) != EOF;) {
 		notation[i] = ch;
 
-		if (i == 6) { // the last value is enter key
+		if (i == 6) { // the last value is [Enter] key
 			char src[3] = "\0";
 			char dest[3] = "\0";
 			int invalid = is_notation_valid(notation, src, dest);
 			char *notation = get_chess_dest(notation, invalid);
 
-			if (!invalid) {
-				enqueue_dnode_list(&queue1, notation);
-
-				// store queue for debug
-				enqueue_dnode_list(&queue2, notation);
-			} else
-				printf("%s", notation);
-
+			set_chess_piece_dest(&game_Q, &dbg_Q, notation,
+					     invalid);
 		}
+
 		i++;
 	}
+
+	clear_dnode_lists(&dbg_Q);
  
     	// Test reason for reaching EOF.
     	if (feof(stdin)) // if failure caused by end-of-file condition
-        	puts("End of file reached");
+        	puts("game end.");
     	else if (ferror(stdin)) {
         	perror("getchar()");
         	fprintf(stderr, "getchar() failed in file %s at line # %d\n",
