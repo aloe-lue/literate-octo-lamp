@@ -25,6 +25,28 @@ int push_number(Number **number, int value)
 	return 0;
 }
 
+int shift_number(Number **number)
+{
+	Number *tmp = *number;
+
+	if (tmp->size == 0)
+		return -1;
+	
+	int front = tmp->numbers[0];
+
+	if (tmp->size < (tmp->capacity >> 1)) {
+		tmp->capacity /= 2;
+		tmp->numbers = realloc(tmp->numbers,
+				       sizeof(int) * tmp->capacity);
+	}
+
+	for (int i = 0; i < tmp->size; i++)
+		tmp->numbers[i] = tmp->numbers[i+1];
+	
+	tmp->size--;
+	return front;
+}
+
 Number *init_number()
 {
 	Number *new_number = malloc(sizeof(Number));

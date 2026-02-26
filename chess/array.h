@@ -20,6 +20,10 @@ Number *init_number();
 int push_number(Number **number, int value);
 
 /*
+ * get the front number in Number
+ */
+int shift_number(Number **number);
+/*
  * clear all that it contains
  */
 void clear_number_numbers(Number **number);
