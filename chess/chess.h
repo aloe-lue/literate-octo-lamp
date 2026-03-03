@@ -204,4 +204,9 @@ int chess_piece_contain_dest(int src, int dest);
  */
 int is_notation_valid(char *notation, char *src, char *dest);
 
+/*
+ * main function that plays chess.
+ */
+void play_chess_user_inputs(void);
+
 #endif // chess.h

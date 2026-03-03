@@ -907,13 +907,87 @@ char *get_chess_dest(char *notation, int invalid_notation)
 	return notation;
 }
 
-void handle_invalid_en_passant(dlinked_list **game_Q)
+void handle_invalid_en_passant(Number **src)
 {
+	// handle invalid en passant by removing the front
+	// of the queue of which the piece turn is stored.
+	// remove it when it's the piece turn 
+}
 
+// this is used to reset the chess piece destination that
+// get's every move so it's a lot of calculation going on 
+void reset_piece_dests()
+{
+	for (int i = 0; i < 64; i++) {
+		int coord[] = { -1, -1 };
+		set_coord_by_idx(coord, i);
+
+		switch (squares[i].chess_piece) {
+		case 1:
+			set_pawn_dests(coord);
+			break;
+		case 2:
+			set_knight_dests(coord);
+			break;
+		case 3:
+			set_rook_dests(coord);
+			break;
+		case 4:
+			set_bishop_dests(coord);
+			break;
+		case 5:
+			set_queen_dests(coord);
+			break;
+		case 6:
+			set_king_dests(coord);
+			break;
+		}
+	}
+}
+
+char priority_notation[6] = "\0";
+char *get_priority_notation(int piece, int src, int dest)
+{
+	switch(piece) {
+	case 1:
+		priority_notation[0] = 'e';
+		break;	
+	case 2:
+		priority_notation[0] = 'n';
+		break;	
+	case 3:
+		priority_notation[0] = 'r';
+		break;	
+	case 4:
+		priority_notation[0] = 'b';
+		break;	
+	case 5:
+		priority_notation[0] = 'q';
+		break;	
+	case 6:
+		priority_notation[0] = 'k';
+		break;	
+	}
+
+	char src_c[3] = "\0";
+	char dest_c[3] = "\0";
+
+	set_square_by_idx(src_c, src);
+	set_square_by_idx(dest_c, dest);
+
+	int j = 0;	
+	for (int i = 1; i < 3; i++)
+		priority_notation[i] = src_c[j++];
+	j = 0;
+	for (int i = 3; i < 6; i++)
+		priority_notation[i] = dest_c[j++];
+
+	return priority_notation;
 }
 
 void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
-			  char *notation, int invalid)
+			  char *notation, int invalid, Number *black,
+			  Number *white)
 {
 	dlinked_list *gq = *game_Q;
 	dlinked_list *dq = *dbg_Q;
@@ -925,12 +999,15 @@ void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
 		printf("%s\n", notation);
 
 	while (gq->dlist_size != 0) {
-
+		// removes the queue from
 		
 		dequeue_dnode_list(game_Q);
 	}
 
+	// after setting the move you have to update every
+	// moves of every piece.
 }
+
 
 
 // this function is too ambiguous
@@ -941,6 +1018,8 @@ void play_chess_user_inputs(void)
 
 	dlinked_list *game_Q = init_dlinked_list();
 	dlinked_list *dbg_Q = init_dlinked_list();
+	dlinked_list *b_Q = init_dlinked_list();
+	dlinked_list *w_Q = init_dlinked_list();
 
 	for (int ch; (ch = getchar()) != EOF;) {
 		notation[i] = ch;
@@ -952,13 +1031,17 @@ void play_chess_user_inputs(void)
 			char *notation = get_chess_dest(notation, invalid);
 
 			set_chess_piece_dest(&game_Q, &dbg_Q, notation,
-					     invalid);
+					     invalid, );
 		}
+		if (i == 5 && (strcmp(notation, "stop")
+			       || strcmp(notation, "exit")))
+			break;
 
 		i++;
 	}
 
 	clear_dnode_lists(&dbg_Q);
+	clear_dnode_lists(&game_Q);
  
     	// Test reason for reaching EOF.
     	if (feof(stdin)) // if failure caused by end-of-file condition
