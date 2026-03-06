@@ -2,6 +2,7 @@
 #define CHESS_H
 
 #include "array.h"
+#include "doubly_linked_list.h"
 
 // unicode for chess piece
 #define WKING		" \u2654 "
@@ -199,10 +200,19 @@ int get_chess_piece_by_letter(char letter);
  */
 int chess_piece_contain_dest(int src, int dest);
 
+void reset_pieces_dests();
+
 /*
  * input validation for chess notation 
  */
 int is_notation_valid(char *notation, char *src, char *dest);
+
+/*
+ * set chess piece dest hmm bad naming but it meant move piece
+ */
+void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
+			  char *notation, int invalid, dlinked_list **black_Q,
+			  dlinked_list **white_Q);
 
 /*
  * main function that plays chess.

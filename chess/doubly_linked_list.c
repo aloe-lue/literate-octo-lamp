@@ -136,3 +136,20 @@ void pop_dnode_list(dlinked_list *dll)
 	free(tail);
 }
 
+void unshift_dnode_list(dlinked_list **dll, char *data)
+{
+	dlinked_list *dlists = *dll;
+	dnode_list *new_data = init_dnode_list(data);
+	
+	if (dlists->dlist_size == 0) {
+		dlists->head = new_data;
+		dlists->tail = new_data;
+		dlists->dlist_size++;
+		return;
+	}
+
+	new_data->next = dlists->head;
+	dlists->head = new_data;
+	dlists->dlist_size++;
+}
+

@@ -916,7 +916,7 @@ void handle_invalid_en_passant(Number **src)
 
 // this is used to reset the chess piece destination that
 // get's every move so it's a lot of calculation going on 
-void reset_piece_dests()
+void reset_pieces_dests()
 {
 	for (int i = 0; i < 64; i++) {
 		int coord[] = { -1, -1 };
@@ -978,16 +978,17 @@ char *get_priority_notation(int piece, int src, int dest)
 	int j = 0;	
 	for (int i = 1; i < 3; i++)
 		priority_notation[i] = src_c[j++];
+
 	j = 0;
-	for (int i = 3; i < 6; i++)
+	for (int i = 3; i < 5; i++)
 		priority_notation[i] = dest_c[j++];
 
 	return priority_notation;
 }
 
 void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
-			  char *notation, int invalid, Number *black,
-			  Number *white)
+			  char *notation, int invalid, dlinked_list **black_Q,
+			  dlinked_list **white_Q)
 {
 	dlinked_list *gq = *game_Q;
 	dlinked_list *dq = *dbg_Q;
@@ -1006,9 +1007,8 @@ void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
 
 	// after setting the move you have to update every
 	// moves of every piece.
+	reset_pieces_dests();
 }
-
-
 
 // this function is too ambiguous
 void play_chess_user_inputs(void)
@@ -1018,6 +1018,8 @@ void play_chess_user_inputs(void)
 
 	dlinked_list *game_Q = init_dlinked_list();
 	dlinked_list *dbg_Q = init_dlinked_list();
+
+	// compare priority moves for current moves
 	dlinked_list *b_Q = init_dlinked_list();
 	dlinked_list *w_Q = init_dlinked_list();
 
@@ -1031,7 +1033,7 @@ void play_chess_user_inputs(void)
 			char *notation = get_chess_dest(notation, invalid);
 
 			set_chess_piece_dest(&game_Q, &dbg_Q, notation,
-					     invalid, );
+					     invalid, &b_Q, &w_Q);
 		}
 		if (i == 5 && (strcmp(notation, "stop")
 			       || strcmp(notation, "exit")))
@@ -1042,6 +1044,8 @@ void play_chess_user_inputs(void)
 
 	clear_dnode_lists(&dbg_Q);
 	clear_dnode_lists(&game_Q);
+	clear_dnode_lists(&b_Q);
+	clear_dnode_lists(&w_Q);
  
     	// Test reason for reaching EOF.
     	if (feof(stdin)) // if failure caused by end-of-file condition
