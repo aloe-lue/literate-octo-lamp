@@ -1,0 +1,47 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+CHESS_FILES	chess.c	/^const char *CHESS_FILES = "abcdefgh";$/;"	v
+CHESS_RANKS	chess.c	/^const char *CHESS_RANKS = "87654321";$/;"	v
+can_pawn_move_2_blocks_forward	chess.c	/^int can_pawn_move_2_blocks_forward(chess_square *squares, int src_idx,$/;"	f
+can_pawn_move_diagonal_left	chess.c	/^int can_pawn_move_diagonal_left(chess_square *squares, int src_idx,$/;"	f
+can_pawn_move_diagonal_right	chess.c	/^int can_pawn_move_diagonal_right(chess_square *squares, int src_idx,$/;"	f
+clear_chess_squares	chess.c	/^void clear_chess_squares(chess_square *squares)$/;"	f
+clear_dnode_lists	doubly_linked_list.c	/^void clear_dnode_lists(dlinked_list *dll)$/;"	f
+dequeue_dnode_list	doubly_linked_list.c	/^void dequeue_dnode_list(dlinked_list *dll)$/;"	f
+dll_test	dll_test.c	/^void dll_test() $/;"	f
+draw_chessboard	chess.c	/^void draw_chessboard(chess_square *squares)$/;"	f
+enqueue_dnode_list	doubly_linked_list.c	/^void enqueue_dnode_list(dlinked_list *dll, char *data)$/;"	f
+get_column_by_file	chess.c	/^int get_column_by_file(const char FILECC)$/;"	f
+get_idx_by_coord	chess.c	/^int get_idx_by_coord(int coord[2])$/;"	f
+get_idx_by_square	chess.c	/^int get_idx_by_square(char square[3])$/;"	f
+get_row_by_rank	chess.c	/^int get_row_by_rank(const char RANK)$/;"	f
+init_chess_squares	chess.c	/^chess_square *init_chess_squares()$/;"	f
+init_dlinked_list	doubly_linked_list.c	/^dlinked_list *init_dlinked_list()$/;"	f
+init_dnode_list	doubly_linked_list.c	/^dnode_list *init_dnode_list(char *data)$/;"	f
+init_knights	chess.c	/^void init_knights(chess_square *squares)$/;"	f
+init_pawns	chess.c	/^void init_pawns(chess_square *squares)$/;"	f
+init_rooks	chess.c	/^void init_rooks(chess_square *squares)$/;"	f
+is_pawn_move_legal	chess.c	/^int is_pawn_move_legal(chess_square *squares, int src_idx, int dest_idx, int i)$/;"	f
+is_xy_between_ab_inc	chess.c	/^int is_xy_between_ab_inc(int x, int y, const int a, const int b)$/;"	f
+main	main.c	/^int main()$/;"	f
+piece_by_notation	chess.c	/^int piece_by_notation(char piece_notation)$/;"	f
+piece_color_turn	chess.c	/^static int piece_color_turn  = 1;$/;"	v	file:
+pop_dnode_list	doubly_linked_list.c	/^void pop_dnode_list(dlinked_list *dll)$/;"	f
+print_from_head_dnodelist	doubly_linked_list.c	/^void print_from_head_dnodelist(dlinked_list *dll)$/;"	f
+print_from_tail_dnodelist	doubly_linked_list.c	/^void print_from_tail_dnodelist(dlinked_list *dll)$/;"	f
+set_bishop_dests	chess.c	/^void set_bishop_dests(chess_square *squares, int coord[2])$/;"	f
+set_bishop_offsets	chess.c	/^void set_bishop_offsets(int bishop_offsets[][2], int idx)$/;"	f
+set_coord_by_idx	chess.c	/^void set_coord_by_idx(int coord[2], int idx)$/;"	f
+set_coord_by_square	chess.c	/^void set_coord_by_square(int coord[2], char square[3])$/;"	f
+set_king_dests	chess.c	/^void set_king_dests(chess_square *squares, int coord[2])$/;"	f
+set_knight_dests	chess.c	/^void set_knight_dests(chess_square *squares, int coord[2])$/;"	f
+set_pawn_dests	chess.c	/^void set_pawn_dests(chess_square *squares, int coord[2])$/;"	f
+set_piece_dest_to	chess.c	/^int set_piece_dest_to(chess_square *squares, const char *NOTATION)$/;"	f
+set_queen_dests	chess.c	/^void set_queen_dests(chess_square *squares, int coord[2])$/;"	f
+set_queen_offsets	chess.c	/^void set_queen_offsets(int queen_offsets[][2], int idx)$/;"	f
+set_rook_dests	chess.c	/^void set_rook_dests(chess_square *squares, int coord[2])$/;"	f
+set_square_by_idx	chess.c	/^void set_square_by_idx(char square[3], int idx)$/;"	f
