@@ -856,64 +856,6 @@ int chess_piece_contain_dest(int src, int dest)
 	return 0;
 }
 
-static int piece_turn = 1;
-int is_notation_valid(char *notation, char *src, char *dest)
-{
-	int piece = get_chess_piece_by_letter(notation[0]);
-
-	if (piece == 0)
-		return 1; // no such piece
-
-	int s = 0, d = 0;
-
-	for (int i = 1; i < 3; i++)
-		src[s++] = notation[i];
-	for (int i = 3; i < 5; i++)
-		dest[d++] = notation[i];
-
-	int sidx = get_idx_by_square(src);
-	int didx = get_idx_by_square(dest);
-
-	if (sidx == 64 && didx == 64)
-		return 2; // over the bound
-	if (sidx == 64 || didx == 64)
-		return 3; // over the bound from source or dest
-
-	if (squares[sidx].piece_color != piece_turn)
-		return 4;
-
-	if (!chess_piece_contain_dest(sidx, didx))
-		return 5; // illegal move
-		
-	return 0;
-}
-
-char *get_chess_dest(char *notation, int invalid_notation)
-{
-	if (invalid_notation == 1)
-		return "no such piece. valid piece b e k n q r";
-
-	if (invalid_notation == 2)
-		return "over the bound.";
-	else if (invalid_notation == 3)
-		return  "over the bound src or dest.";
-
-	if (invalid_notation == 4)
-		return "move your chess piece not the enemy.";
-
-	if (invalid_notation == 5)
-		return "Illegal move.";
-	
-	return notation;
-}
-
-void handle_invalid_en_passant(Number **src)
-{
-	// handle invalid en passant by removing the front
-	// of the queue of which the piece turn is stored.
-	// remove it when it's the piece turn 
-}
-
 // this is used to reset the chess piece destination that
 // get's every move so it's a lot of calculation going on 
 void reset_piece_dests()
@@ -945,115 +887,97 @@ void reset_piece_dests()
 	}
 }
 
-char priority_notation[6] = "\0";
-char *get_priority_notation(int piece, int src, int dest)
+void delete_piece_dests(int src)
 {
-	switch(piece) {
-	case 1:
-		priority_notation[0] = 'e';
-		break;	
-	case 2:
-		priority_notation[0] = 'n';
-		break;	
-	case 3:
-		priority_notation[0] = 'r';
-		break;	
-	case 4:
-		priority_notation[0] = 'b';
-		break;	
-	case 5:
-		priority_notation[0] = 'q';
-		break;	
-	case 6:
-		priority_notation[0] = 'k';
-		break;	
+	clear_number_numbers(&squares[src].piece_dests);
+}
+
+static int piece_turn = 1;
+
+void set_src_empty(int src)
+{
+	squares[src].piece_color = -1;
+	squares[src].contain_piece = 0;
+	squares[src].chess_piece = 0;
+	squares[src].special_move = -1;
+	
+	delete_piece_dests(src);
+
+	squares[src].piece_notation = 'o';
+	strcpy(squares[src].piece_symbol, squares[src].square_color == 1 ?
+	       WHITESQUARE : BLACKSQUARE);
+}
+
+void set_piece_from_to(int src, int dest)
+{
+	squares[dest].piece_color = squares[src].piece_color;
+	squares[dest].contain_piece = squares[src].contain_piece;
+	squares[dest].chess_piece = squares[src].chess_piece;
+	squares[dest].special_move = squares[src].special_move;
+	squares[dest].piece_dests = squares[src].piece_dests;
+	squares[dest].piece_notation = squares[src].piece_notation;
+	strcpy(squares[dest].piece_symbol, squares[src].piece_symbol);
+}
+
+void set_piece_to(char notation[7]) // or move piece to 
+{
+	int piece = get_chess_piece_by_letter(notation[0]);
+
+	if (piece == 0) {
+		printf("%s %s.",
+		       "unknown chess piece:",
+		       get_chess_piece_by_number(piece));
+		return;
 	}
 
-	char src_c[3] = "\0";
-	char dest_c[3] = "\0";
-
-	set_square_by_idx(src_c, src);
-	set_square_by_idx(dest_c, dest);
+	char src[3] = "\0";
+	char dest[3] = "\0";
 
 	int j = 0;	
-	for (int i = 1; i < 3; i++)
-		priority_notation[i] = src_c[j++];
+	for (int i = 1; i < 3; i++) 
+		src[j++] = notation[i];
 	j = 0;
-	for (int i = 3; i < 6; i++)
-		priority_notation[i] = dest_c[j++];
+	for (int i = 3; i < 5; i++) 
+		dest[j++] = notation[i];
 
-	return priority_notation;
-}
+	int src_idx = get_idx_by_square(src);
+	int dest_idx = get_idx_by_square(dest);
 
-void set_chess_piece_dest(dlinked_list **game_Q, dlinked_list **dbg_Q,
-			  char *notation, int invalid, dlinked_list **black,
-			  dlinked_list **white)
-{
-	dlinked_list *gq = *game_Q;
-	dlinked_list *dq = *dbg_Q;
-	dlinked_list *wq = *white;
-	dlinked_list *bq = *black;
-
-	if (!invalid) {
-		enqueue_dnode_list(&gq, notation);
-		enqueue_dnode_list(&dq, notation);
-	} else
-		printf("%s\n", notation);
-
-	while (gq->dlist_size != 0) {
-		// priority input
-		if (bq->dlist_size >= 1 || wq->dlist_size >= 1) {
-			if (piece_turn == 1) {
-				if (!strcmp(notation, bq->head->data)) {
-				}
-			} else
-				set_piece_from_to();
-		} else
-			set_piece_from_to(); // put the piece from here to there
-			
-		
-		dequeue_dnode_list(game_Q);
+	if (squares[src_idx].piece_color != piece_turn) {
+		printf("%s %s.", "don\'t move opponent piece: its",
+		       piece_turn == 1 ? "white\'s turn" : "black\'s turn");
+		return;
+	}
+	
+	if (src_idx == 64) {
+		printf("%s %s","unknown source:", src);
+		return;
+	}
+	if (dest_idx == 64) {
+		printf("%s %s", "unknown destination:", dest);
+		return;
 	}
 
-	// after setting the move you have to update every
-	// moves of every piece.
-	reset_piece_dests();
+	printf("%s\n", notation);
 }
-
 
 
 // this function is too ambiguous
-void play_chess_user_inputs(void)
+void play_chess_user_inputs()
 {
 	char notation[7] = "\0";
 	int i = 0;
 
-	dlinked_list *game_Q = init_dlinked_list();
-	dlinked_list *dbg_Q = init_dlinked_list();
-	dlinked_list *b_Q = init_dlinked_list();
-	dlinked_list *w_Q = init_dlinked_list();
-
 	for (int ch; (ch = getchar()) != EOF;) {
 		notation[i] = ch;
-
-		if (i == 6) { // the last value is [Enter] key
-			char src[3] = "\0";
-			char dest[3] = "\0";
-			int invalid = is_notation_valid(notation, src, dest);
-			char *notation = get_chess_dest(notation, invalid);
-
-			set_chess_piece_dest(&game_Q, &dbg_Q, notation,
-					     invalid, &b_Q, &w_Q);
-		}
-		if (i == 5 && (strcmp(notation, "stop")
-			       || strcmp(notation, "exit")))
-			break;
-
 		i++;
-	}
 
-	clear_dnode_lists(&dbg_Q);
-	clear_dnode_lists(&game_Q);
+		if (i == 6) {
+			set_piece_to(notation);
+	
+			i = 0;
+		}
+	}
  
     	// Test reason for reaching EOF.
     	if (feof(stdin)) // if failure caused by end-of-file condition
