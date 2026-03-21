@@ -3,11 +3,13 @@
 #include <stddef.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "chess.h"
 #include "array.h"
 #include "merge_sort.h"
 #include "doubly_linked_list.h"
+#include "binary_search.h"
 
 chess_square squares[64];
 
@@ -848,10 +850,10 @@ int chess_piece_contain_dest(int src, int dest)
 {
 	Number *steps = squares[src].piece_dests;
 
-	for (int i = 0; i < steps->size; i++) {
-		if (steps->numbers[i] == dest)
-			return 1;
-	}
+	int err = binary_search(steps->numbers, steps->size, dest);
+	
+	if (err != 64)
+		return 1;
 
 	return 0;
 }
@@ -958,7 +960,18 @@ void set_piece_to(char notation[7]) // or move piece to
 		return;
 	}
 
-	printf("%s\n", notation);
+	if (!chess_piece_contain_dest(src_idx, dest_idx)) {
+		printf("%s %s %s %s %s %s %s.", "Illegal move by ",
+		       get_chess_piece_by_number(piece), piece_turn == 1
+		       ? "by white\'s turn" : "by black\'s turn", "from src:",
+		       src, "to dest: ", dest);
+		return;
+	}
+	
+	set_piece_from_to(src_idx, dest_idx);
+	set_src_empty(src_idx);
+	
+	piece_turn = piece_turn == 1 ? 2 : 1;	
 }
 
 
@@ -974,7 +987,8 @@ void play_chess_user_inputs()
 
 		if (i == 6) {
 			set_piece_to(notation);
-	
+
+			draw_chessboard();	
 			i = 0;
 		}
 	}
