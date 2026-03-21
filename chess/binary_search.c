@@ -1,3 +1,4 @@
+#include "binary_search.h"
 
 int binary_search(int numbers[], int numbers_len, int target_number)
 {
@@ -16,5 +17,5 @@ int binary_search(int numbers[], int numbers_len, int target_number)
 			right = mid - 1;
 	}
 
-	return -1;
+	return 64;
 }
