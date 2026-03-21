@@ -1,5 +1,5 @@
 objs = main.o chess.o doubly_linked_list.o dll_test.o \
-       merge_sort.o array.o
+       merge_sort.o array.o binary_search.o
 
 main: $(objs)
 	gcc -std=gnu99 -Wall -pedantic-errors -Wpedantic $(objs) -o main
@@ -10,6 +10,7 @@ doubly_linked_list.o: doubly_linked_list.h
 dll_test.o: dll_test.h
 merge_sort.o: merge_sort.h
 array.o: array.h
+binary_search.o: binary_search.h
 
 .PHONY: clean
 	rm -r main $(objs)
